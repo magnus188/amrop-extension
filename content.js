@@ -1,3 +1,18 @@
+function scrapeProfile(){
+    about = getAboutSection()
+    experiences = scrapeExperiences()
+
+    info = {
+        about,
+        experiences
+    }
+
+    console.log(info)
+
+    return info
+}
+
+
 function scrapeExperiences() {
     const experiences = [];
 
@@ -51,7 +66,6 @@ function scrapeExperiences() {
         }
     });
 
-    console.log('Scraped experiences:', experiences);
     return experiences;
 }
 
@@ -186,10 +200,49 @@ function parsePosition(positionBlock, fallbackCompany) {
     return { jobTitle, company, duration, location };
 }
 
+function getAboutSection() {
+    let aboutText = 'N/A';
+
+    // 1) First, locate the #about anchor
+    const aboutAnchor = document.querySelector('#about');
+    if (!aboutAnchor) {
+        // No "about" section found
+        return aboutText;
+    }
+
+    // 2) Move up to the nearest <section> that holds this about block
+    const aboutSection = aboutAnchor.closest('section.artdeco-card');
+    if (!aboutSection) {
+        return aboutText;
+    }
+
+    // 3) Inside the section, find the expanded or collapsed text container
+    //    The text is often within `div.inline-show-more-text--is-collapsed span[aria-hidden="true"]`
+    const collapsedTextEl = aboutSection.querySelector(
+        '.inline-show-more-text--is-collapsed span[aria-hidden="true"]'
+    );
+
+    // 4) If no collapsed container, check if it’s already expanded or has a different structure
+    //    (Optional fallback if needed)
+    let textEl = collapsedTextEl;
+    if (!textEl) {
+        textEl = aboutSection.querySelector(
+            '.inline-show-more-text span[aria-hidden="true"]'
+        );
+    }
+
+    // 5) Grab the text
+    if (textEl) {
+        aboutText = textEl.textContent.trim();
+    }
+
+    return aboutText;
+}
+
 // Example: extension message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "scrapeProfile") {
-        const data = scrapeExperiences();
+        const data = scrapeProfile();
         sendResponse(data);
     }
 });
