@@ -1,9 +1,18 @@
 <html>
+    <head>
+        <link rel="stylesheet" href="style/popup.css">
+    </head>
     <body>
         <div>
             <h1>LinkedIn Scraper</h1>
             <button id="scrapeButton">Scrape current page</button>
-            <!-- <button id="scrapeAll">Scrape all open tabs</button> -->
+
+            <h2>ChatGPT</h2>
+            <textarea id="prompt" placeholder="Enter your prompt here..."></textarea>
+            <button id="send">Send</button>
+            <div id="response"></div>
+            <button id="settings">Settings</button>
+
             <script src="popup.js"></script>
         </div>
     </body>

@@ -3,17 +3,23 @@
     "description": "Listeprepp fra linkedin profil",
     "version": "1.0",
     "manifest_version": 3,
-    "permissions": [
-        "scripting",
-        "tabs",
-        "storage"
-    ],
+"permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+],
     "host_permissions": [
-        "https://www.linkedin.com/*"
+        "https://www.linkedin.com/*",
+        "https://api.openai.com/*"
     ],
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "service-worker.js"
     },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+    },
+    "options_page": "options.html",
     "content_scripts": [
         {
             "matches": [
@@ -25,8 +31,7 @@
             ]
         }
     ],
-    "action": {
-        "default_popup": "popup.html",
-        "default_icon": "icon.png"
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
     }
 }
