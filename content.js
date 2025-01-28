@@ -1,66 +1,126 @@
-function scrapeProfile(){
-    about = getAboutSection()
-    experiences = scrapeExperiences()
 
-    info = {
-        about,
-        experiences
-    }
-
-    console.log(info)
-
-    return info
+//////////////////////////////
+// Maybe go to full page //
+//////////////////////////////
+function maybeGoToFullExperiencePage() {
+    return new Promise((resolve, reject) => {
+        const seeAllLink = document.querySelector('#navigation-index-see-all-experiences');
+        if (seeAllLink) {
+            const about = getAboutSection();
+            chrome.storage.local.set({ aboutText: about }, () => {
+                window.location.href = seeAllLink.href;
+                // No resolve here because we're navigating away
+            });
+        } else {
+            chrome.storage.local.get(['aboutText'], (res) => {
+                let storedAbout = res.aboutText || 'N/A';
+                if (storedAbout === 'N/A') {
+                    storedAbout = getAboutSection();
+                }
+                const experiences = scrapeExperiences();
+                const info = { about: storedAbout, experiences };
+                resolve(info);
+            });
+        }
+    });
 }
 
+////////////////////////////////////////
+// Actual function to scrape About //
+////////////////////////////////////////
+function getAboutSection() {
+    let aboutText = 'N/A';
 
+    // 1) Locate the #about anchor
+    const aboutAnchor = document.querySelector('#about');
+    if (!aboutAnchor) return aboutText; // none
+
+    // 2) Move up to the section
+    const aboutSection = aboutAnchor.closest('section.artdeco-card');
+    if (!aboutSection) return aboutText;
+
+    // 3) Find the collapsed or expanded text container
+    const collapsedTextEl = aboutSection.querySelector(
+        '.inline-show-more-text--is-collapsed span[aria-hidden="true"]'
+    );
+
+    // 4) Fallback if already expanded
+    let textEl = collapsedTextEl;
+    if (!textEl) {
+        textEl = aboutSection.querySelector('.inline-show-more-text span[aria-hidden="true"]');
+    }
+
+    // 5) Extract text if found
+    if (textEl) {
+        aboutText = textEl.textContent.trim();
+    }
+    return aboutText;
+}
+
+////////////////////////////////////
+// The same experiences logic  //
+////////////////////////////////////
 function scrapeExperiences() {
+    // Try the "short-page" approach first:
+    let experiences = scrapeExperiencesShortPage();
+    if (experiences && experiences.length > 0) {
+        return experiences;
+    }
+
+    experiences = scrapeExperiencesFullPage();
+    return experiences;
+}
+
+// --------------------------
+// 1) Short-page approach
+// --------------------------
+function scrapeExperiencesShortPage() {
     const experiences = [];
 
-    // 1) Locate the Experience section
+    // 1) Look for #experience
     const experienceDiv = document.querySelector('#experience');
     if (!experienceDiv) {
-        console.log('No #experience div found');
-        return experiences;
+        // No #experience div found (likely full page)
+        return experiences;  // empty
     }
+
     const experienceSection = experienceDiv.closest('section.artdeco-card');
     if (!experienceSection) {
-        console.log('No parent section.artdeco-card found for #experience');
+        // No parent section found for #experience
         return experiences;
     }
 
-    // 2) Grab ALL blocks that have data-view-name="profile-component-entity" inside Experience
-    const allBlocks = experienceSection.querySelectorAll('div[data-view-name="profile-component-entity"]');
+    // 2) Within that section, get all blocks that have data-view-name="profile-component-entity"
+    const allBlocks = experienceSection.querySelectorAll(
+        'div[data-view-name="profile-component-entity"]'
+    );
 
-    // 3) Filter to top-level blocks: no parent "profile-component-entity" AND looks like it has a job title
+    // 3) Filter to top-level
     const topLevelBlocks = [...allBlocks].filter((block) => {
-        const parentBlock = block.parentElement?.closest('div[data-view-name="profile-component-entity"]');
-        if (parentBlock) return false; // skip if nested
-
+        const parent = block.parentElement?.closest('div[data-view-name="profile-component-entity"]');
+        if (parent) return false; // skip if nested
         return hasJobTitle(block);
     });
 
     // 4) Parse each top-level block
     topLevelBlocks.forEach((companyBlock) => {
-        // Attempt to get the "parent" company name for these positions
         const fallbackCompany = getCompanyName(companyBlock);
-
-        // 5) Sub-blocks (child positions) under the same companyBlock
         const childBlocks = [...companyBlock.querySelectorAll('div[data-view-name="profile-component-entity"]')]
-            .filter((b) => b !== companyBlock) // exclude the block itself
+            .filter((b) => b !== companyBlock)
             .filter(hasJobTitle);
 
-        // If no sub-positions, treat companyBlock as a single position
         if (childBlocks.length === 0) {
-            const singlePosition = parsePosition(companyBlock, fallbackCompany);
-            if (singlePosition.jobTitle !== 'N/A' || singlePosition.company !== 'N/A') {
-                experiences.push(singlePosition);
+            // single
+            const singlePos = parsePosition(companyBlock, fallbackCompany);
+            if (singlePos.jobTitle !== 'N/A' || singlePos.company !== 'N/A') {
+                experiences.push(singlePos);
             }
         } else {
-            // Otherwise parse each sub-position
+            // multiple
             childBlocks.forEach((posBlock) => {
-                const subPosition = parsePosition(posBlock, fallbackCompany);
-                if (subPosition.jobTitle !== 'N/A' || subPosition.company !== 'N/A') {
-                    experiences.push(subPosition);
+                const subPos = parsePosition(posBlock, fallbackCompany);
+                if (subPos.jobTitle !== 'N/A' || subPos.company !== 'N/A') {
+                    experiences.push(subPos);
                 }
             });
         }
@@ -69,59 +129,120 @@ function scrapeExperiences() {
     return experiences;
 }
 
-/**
- * Returns a "fallback" company name for a top-level companyBlock.
- * Because LinkedIn's DOM varies, we try multiple selectors.
- */
+// --------------------------
+// 2) Full-page approach
+// --------------------------
+function isInBrowsemapSection(block) {
+    // 1) Find the nearest <section data-view-name="profile-card">
+    const section = block.closest('section[data-view-name="profile-card"]');
+    if (!section) return false;
+
+    // 2) Look for the H2 heading in that section
+    const headingEl = section.querySelector('h2.pvs-header__title');
+    if (!headingEl) return false;
+
+    // 3) Convert the heading text to lowercase
+    const headingText = headingEl.textContent.trim().toLowerCase();
+
+    // 4) If the heading text is "flere profiler til deg" OR "people also viewed" etc.,
+    //    then this block is in the browsemap
+    if (headingText.includes('flere profiler') || headingText.includes('people also viewed')) {
+        return true;
+    }
+    return false;
+}
+
+function scrapeExperiencesFullPage() {
+    const experiences = [];
+
+    // Grab all "profile-component-entity" blocks in the DOM
+    const allBlocks = document.querySelectorAll('div[data-view-name="profile-component-entity"]');
+
+    const topLevelBlocks = [...allBlocks].filter((block) => {
+        // 1) Skip if nested
+        const parent = block.parentElement?.closest('div[data-view-name="profile-component-entity"]');
+        if (parent) return false;
+
+        // 2) Skip if it’s in the browsemap side section
+        if (isInBrowsemapSection(block)) {
+            return false;
+        }
+
+        // 3) Must have a job title
+        return hasJobTitle(block);
+    });
+
+    topLevelBlocks.forEach((companyBlock) => {
+        // same parse logic as before
+        const fallbackCompany = getCompanyName(companyBlock);
+
+        const childBlocks = [
+            ...companyBlock.querySelectorAll('div[data-view-name="profile-component-entity"]'),
+        ]
+            .filter((b) => b !== companyBlock && hasJobTitle(b));
+
+        if (childBlocks.length === 0) {
+            const singlePos = parsePosition(companyBlock, fallbackCompany);
+            if (singlePos.jobTitle !== 'N/A' || singlePos.company !== 'N/A') {
+                experiences.push(singlePos);
+            }
+        } else {
+            childBlocks.forEach((posBlock) => {
+                const subPos = parsePosition(posBlock, fallbackCompany);
+                if (subPos.jobTitle !== 'N/A' || subPos.company !== 'N/A') {
+                    experiences.push(subPos);
+                }
+            });
+        }
+    });
+
+    return experiences;
+}
+
+//////////////////////////////////////
+// Supporting sub-functions etc. //
+//////////////////////////////////////
+function hasJobTitle(block) {
+    const jobTitleCandidate = block.querySelector(`
+      div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
+      div.t-bold span[aria-hidden="true"],
+      span.t-bold[aria-hidden="true"]
+    `);
+    return !!jobTitleCandidate;
+}
+
 function getCompanyName(companyBlock) {
-    // --- Attempt #1 ---
-    // The "classic" approach: look for a link with data-field="experience_company_logo"
-    // that has a bold span. E.g. single-company single-position entries often appear here
+    // Attempt #1
     let el = companyBlock.querySelector(
         'a[data-field="experience_company_logo"] div.t-bold span[aria-hidden="true"]'
     );
 
-    // --- Attempt #2 ---
-    // Single-position blocks sometimes have a link with the classes below
+    // Attempt #2
     if (!el) {
         el = companyBlock.querySelector(
             'a.optional-action-target-wrapper.display-flex.flex-column.full-width div.t-bold span[aria-hidden="true"]'
         );
     }
 
-    // --- Attempt #3 ---
-    // If we still haven't found it, try any bold text in the block
     let company = el ? el.textContent.trim() : 'N/A';
 
-    // --- Attempt #4 ---
-    // If still "N/A," try to parse the <img alt="Something-logo"> from
-    // the anchor that has data-field="experience_company_logo"
-    // E.g. alt="Amrop Norge-logo"
+    // Attempt #3: alt text
     if (company === 'N/A') {
         const logoImg = companyBlock.querySelector(
             'a[data-field="experience_company_logo"] img[alt*="-logo"]'
         );
         if (logoImg) {
-            const altText = logoImg.getAttribute('alt');
-            if (altText) {
-                // e.g. "Amrop Norge-logo" => "Amrop Norge"
-                company = altText.replace(/-logo$/i, '').trim();
-            }
+            const altText = logoImg.getAttribute('alt') || '';
+            company = altText.replace(/-logo$/i, '').trim();
         }
     }
 
-    // --- Attempt #5 ---
-    // If STILL "N/A," check for that second line that often looks like
-    //     <span class="t-14 t-normal">
-    //       <span aria-hidden="true">Amrop · Heltid</span>
-    //     </span>
-    // or “Porter AS (Porterbuddy) · Konsulent”
+    // Attempt #4: "Amrop · Heltid" => "Amrop"
     if (company === 'N/A') {
         const secondLine = companyBlock.querySelector('span.t-14.t-normal > span[aria-hidden="true"]');
         if (secondLine) {
-            let text = secondLine.textContent.trim();  // e.g. "Amrop · Heltid"
+            let text = secondLine.textContent.trim();
             if (text.includes(' · ')) {
-                // Grab everything before the " · " so we skip the job type
                 text = text.split(' · ')[0].trim();
             }
             if (text) {
@@ -129,70 +250,44 @@ function getCompanyName(companyBlock) {
             }
         }
     }
-
     return company;
 }
 
-/**
- * Checks if a block has a job title-like element (so we skip skill/media blocks).
- */
-function hasJobTitle(block) {
-    const jobTitleCandidate = block.querySelector(`
-        div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
-        div.t-bold span[aria-hidden="true"],
-        span.t-bold[aria-hidden="true"]
-    `);
-    return !!jobTitleCandidate;
-}
-
-/**
- * Parse a single position's data: jobTitle, company, duration, location.
- * If fallbackCompany is "N/A," we do an extra pass to find a second bold span
- * that might be the organization name (especially for board roles).
- */
 function parsePosition(positionBlock, fallbackCompany) {
     let jobTitle = 'N/A';
     let company = fallbackCompany || 'N/A';
     let duration = 'N/A';
     let location = 'N/A';
 
-    // -- 1) Job Title --
+    // Title
     const jobTitleEl = positionBlock.querySelector(`
-    div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
-    div.t-bold span[aria-hidden="true"],
-    span.t-bold[aria-hidden="true"]
-  `);
+      div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
+      div.t-bold span[aria-hidden="true"],
+      span.t-bold[aria-hidden="true"]
+    `);
     if (jobTitleEl) {
         jobTitle = jobTitleEl.textContent.trim();
     }
 
-    // -- 2) Gather lines of "light text" (often date + location) --
-    //    e.g. <span class="t-14 t-normal t-black--light">
-    //           <span aria-hidden="true">jan. 2020 - nå …</span>
-    //         </span>
-    //         <span class="t-14 t-normal t-black--light">
-    //           <span aria-hidden="true">Oslo, Norway · På kontoret</span>
-    //         </span>
+    // Lines for date + location
     const lightLines = [
-        ...positionBlock.querySelectorAll('span.t-14.t-normal.t-black--light'),
+        ...positionBlock.querySelectorAll('span.t-14.t-normal.t-black--light')
     ];
 
-    // Extract text from each line’s <span aria-hidden="true">
     const textLines = lightLines.map((line) => {
         const hiddenSpan = line.querySelector('span[aria-hidden="true"]');
         return hiddenSpan ? hiddenSpan.textContent.trim() : '';
     });
 
-    // Typically textLines[0] is the date-range, textLines[1] is the location
     if (textLines[0]) duration = textLines[0];
 
     if (textLines.length > 1 && textLines[1]) {
-        // We might get "Oslo, Norway · På kontoret", so split at " · "
+        // e.g. "Oslo, Norway · På kontoret" => "Oslo, Norway"
         const locParts = textLines[1].split(' · ');
-        location = locParts[0].trim(); // e.g. "Oslo, Norway"
+        location = locParts[0].trim();
     }
 
-    // -- 3) If company is still "N/A," do a more thorough fallback lookup --
+    // If fallback didn't give a company name, try again
     if (!company || company === 'N/A') {
         company = getCompanyName(positionBlock);
     }
@@ -200,49 +295,12 @@ function parsePosition(positionBlock, fallbackCompany) {
     return { jobTitle, company, duration, location };
 }
 
-function getAboutSection() {
-    let aboutText = 'N/A';
-
-    // 1) First, locate the #about anchor
-    const aboutAnchor = document.querySelector('#about');
-    if (!aboutAnchor) {
-        // No "about" section found
-        return aboutText;
-    }
-
-    // 2) Move up to the nearest <section> that holds this about block
-    const aboutSection = aboutAnchor.closest('section.artdeco-card');
-    if (!aboutSection) {
-        return aboutText;
-    }
-
-    // 3) Inside the section, find the expanded or collapsed text container
-    //    The text is often within `div.inline-show-more-text--is-collapsed span[aria-hidden="true"]`
-    const collapsedTextEl = aboutSection.querySelector(
-        '.inline-show-more-text--is-collapsed span[aria-hidden="true"]'
-    );
-
-    // 4) If no collapsed container, check if it’s already expanded or has a different structure
-    //    (Optional fallback if needed)
-    let textEl = collapsedTextEl;
-    if (!textEl) {
-        textEl = aboutSection.querySelector(
-            '.inline-show-more-text span[aria-hidden="true"]'
-        );
-    }
-
-    // 5) Grab the text
-    if (textEl) {
-        aboutText = textEl.textContent.trim();
-    }
-
-    return aboutText;
-}
-
-// Example: extension message listener
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "scrapeProfile") {
-        const data = scrapeProfile();
-        sendResponse(data);
+        maybeGoToFullExperiencePage().then((info) => {
+            console.log(info);
+            sendResponse(info);
+        });
+        return true; // keep port open
     }
 });
