@@ -1,4 +1,4 @@
-name: Lint and Publish extension
+name: Package Extension
 
 on:
   push:
@@ -68,7 +68,7 @@ jobs:
       # -------------------------
       # Publish to Chrome Web Store
       - name: Publish to Chrome Web Store
-        uses: Chromex/action@v1
+        uses: mnao305/chrome-extension-upload@v5.0.0
         with:
           extension_id: ${{ secrets.EXTENSION_ID }}
           client_id: ${{ secrets.CLIENT_ID }}
