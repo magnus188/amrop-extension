@@ -7,26 +7,68 @@ function maybeGoToFullExperiencePage() {
         const seeAllLink = document.querySelector('#navigation-index-see-all-experiences');
         if (seeAllLink) {
             const about = getAboutSection();
-            chrome.storage.local.set({ aboutText: about }, () => {
+            const name = getProfileName();
+
+            // Store 'aboutText', 'name', and set a flag indicating we need to scrape the full page
+            chrome.storage.local.set({ aboutText: about, name: name, nextPageScrapeNeeded: true }, () => {
+                // Navigate to the full experiences page
                 window.location.href = seeAllLink.href;
-                // No resolve here because we're navigating away
+                // No resolve here because the page is navigating away
             });
         } else {
-            chrome.storage.local.get(['aboutText'], (res) => {
-                let storedAbout = res.aboutText || 'N/A';
-                if (storedAbout === 'N/A') {
-                    storedAbout = getAboutSection();
+            // We're likely on the full experiences page or a short page with no "see all" link
+            chrome.storage.local.get(['aboutText', 'name', 'nextPageScrapeNeeded'], (res) => {
+                const { aboutText, name, nextPageScrapeNeeded } = res;
+
+                if (nextPageScrapeNeeded) {
+                    let storedAbout = aboutText || 'N/A';
+                    let storedName = name || 'N/A';
+
+                    // If 'aboutText' or 'name' is missing, attempt to scrape them again
+                    if (storedAbout === 'N/A') {
+                        storedAbout = getAboutSection();
+                    }
+                    if (storedName === 'N/A') {
+                        storedName = getProfileName();
+                    }
+
+                    // Scrape the experiences
+                    const experiences = scrapeExperiences();
+
+                    // Compile the final data object
+                    const info = {
+                        name: storedName,
+                        about: storedAbout,
+                        experiences
+                    };
+
+                    // Reset the flag to indicate scraping is complete
+                    chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
+                        // Resolve the promise with the final data
+                        resolve(info);
+                    });
+                } else {
+                    // Optional: Handle scenarios where scraping isn't needed
+                    // For example, scrape experiences without needing to combine with stored data
+                    const storedAbout = aboutText || getAboutSection();
+                    const storedName = name || getProfileName();
+                    const experiences = scrapeExperiences();
+
+                    const info = {
+                        name: storedName,
+                        about: storedAbout,
+                        experiences
+                    };
+
+                    resolve(info);
                 }
-                const experiences = scrapeExperiences();
-                const info = { about: storedAbout, experiences };
-                resolve(info);
             });
         }
     });
 }
 
 ////////////////////////////////////////
-// Actual function to scrape About //
+// Function to scrape About //
 ////////////////////////////////////////
 function getAboutSection() {
     let aboutText = 'N/A';
@@ -55,6 +97,45 @@ function getAboutSection() {
         aboutText = textEl.textContent.trim();
     }
     return aboutText;
+}
+
+////////////////////////////////////////
+// Function to get Name //
+////////////////////////////////////////
+function getProfileName() {
+    let name = 'N/A';
+
+    // Attempt 1: Look for the main <h1> tag that typically contains the name
+    const nameHeader = document.querySelector('h1.text-heading-xlarge.inline.t-24.v-align-middle.break-words');
+    if (nameHeader) {
+        name = nameHeader.textContent.trim();
+        return name;
+    }
+
+    // Attempt 2: Alternative selector if the first one fails
+    const alternativeNameHeader = document.querySelector('li.inline.t-24.t-black.t-normal.break-words');
+    if (alternativeNameHeader) {
+        name = alternativeNameHeader.textContent.trim();
+        return name;
+    }
+
+    // Attempt 3: Using more general selectors with role attributes
+    const roleNameHeader = document.querySelector('[role="heading"][aria-level="1"]');
+    if (roleNameHeader) {
+        name = roleNameHeader.textContent.trim();
+        return name;
+    }
+
+    // Attempt 4: Fallback to the page's title tag (less reliable)
+    if (document.title) {
+        // Typically, LinkedIn profile titles are in the format "First Last | LinkedIn"
+        const titleParts = document.title.split('|');
+        if (titleParts.length > 0) {
+            name = titleParts[0].trim();
+        }
+    }
+
+    return name;
 }
 
 ////////////////////////////////////

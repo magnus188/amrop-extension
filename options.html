@@ -1,24 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8" />
     <title>Extension Settings</title>
-    <link rel="stylesheet" href="style/options.css">
+<link rel="stylesheet" href="style/options.css">
 </head>
 
 <body>
-    <h2>Settings</h2>
-    <label>
-        <input type="radio" name="auth" value="user" checked> Use My OpenAI API Key
-    </label>
-    <input type="text" id="apiKey" placeholder="Enter your OpenAI API Key">
+    <div class="settings-container">
+        <h2>Settings</h2>
 
-    <label>
-        <input type="radio" name="auth" value="free"> Use Free Version
-    </label>
-    <button id="save">Save</button>
+        <!-- Gemini API Key input -->
+        <div class="form-group">
+            <label for="apiKey">Gemini API Key</label>
+            <input type="text" id="apiKey" class="form-control" placeholder="Enter your Gemini API Key" />
+        </div>
 
-    <script src="options.js"></script>
+        <!-- Link to how to get a free Gemini API key -->
+        <div class="form-group">
+            <label>Need a Gemini API Key?</label>
+            <a href="https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw.." target="_blank">
+                Click here to get one for free
+            </a>
+        </div>
+
+        <!-- Output language selection -->
+        <div class="form-group">
+            <label for="languageSelect">Output Language</label>
+            <select id="languageSelect" class="form-control">
+                <option value="English">English</option>
+                <option value="Norwegian">Norwegian</option>
+            </select>
+        </div>
+
+        <!-- LLM initial prompt instruction -->
+        <div class="form-group">
+            <label for="promptInstruction">LLM Initial Prompt Instruction</label>
+            <textarea id="promptInstruction" class="form-control" rows="5"
+                placeholder="Enter your custom instructions here..."></textarea>
+                <!-- Restore to Default Button -->
+                <button id="restoreDefault" class="restore-button" type="button">
+                    Restore to Default prompt
+                </button>
+        </div>
+
+        <!-- Save button -->
+        <button id="save" class="save-button">
+            Save
+        </button>
+    </div>
+    <div id="snackbar"></div>
 </body>
+
+<script src="options.js"></script>
 
 </html>

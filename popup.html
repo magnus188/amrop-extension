@@ -1,15 +1,29 @@
 <html>
-    <head>
-        <link rel="stylesheet" href="style/popup.css">
-    </head>
-    <body>
-        <div>
-            <h1>LinkedIn Scraper</h1>
-            <button id="scrapeButton">Scrape current page</button>
-            <div id="response"></div>
-            <button id="settings">Settings</button>
 
-            <script src="popup.js"></script>
-        </div>
-    </body>
+<head>
+    <link rel="stylesheet" href="style/popup.css">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <main>
+        <nav>
+            <span id="copy" class="material-icons">
+                <!-- &#xe2ec -->
+                &#xe14d
+            </span>
+            <span id="settings" class="material-icons">
+                &#xE8B8
+            </span>
+        </nav>
+        <button id="scrapeButton">Generate
+            <span class="loader"></span>
+        </button>
+        <div id="response"></div>
+
+        <script src="popup.js"></script>
+    </main>
+</body>
+
 </html>

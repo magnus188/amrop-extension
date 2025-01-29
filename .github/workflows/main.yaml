@@ -1,0 +1,78 @@
+name: Lint and Publish extension
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # -------------------------
+      # HTML Lint (using HTMLHint or W3C Action)
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install HTMLHint
+        run: npm install -g htmlhint
+
+      - name: Lint HTML
+        run: htmlhint "**/*.html"
+
+      # -------------------------
+      # CSS Lint (using stylelint)
+      - name: Install stylelint
+        run: npm install -g stylelint stylelint-config-standard
+
+      - name: Lint CSS
+        run: stylelint "**/*.css"
+
+      # -------------------------
+      # JS Lint (using ESLint)
+      - name: Install ESLint
+        run: npm install -g eslint
+
+      - name: Lint JavaScript
+        run: eslint "**/*.js"
+
+      # -------------------------
+      # Spell Check (example: codespell)
+      - name: Install codespell
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3-pip -y
+          pip3 install codespell
+
+      - name: Spell check
+        run: |
+          codespell . \
+            --ignore-words-list="foo,bar" \
+            --skip="./.git,./.github,./extension.zip"
+
+      # -------------------------
+      # Only if all lint steps pass, zip the extension
+      - name: Zip the extension
+        run: |
+          zip -r extension.zip . \
+            -x ".git*" \
+            -x ".github*" \
+            -x "README.md" \
+            -x "*.yml"
+
+      # -------------------------
+      # Publish to Chrome Web Store
+      - name: Publish to Chrome Web Store
+        uses: Chromex/action@v1
+        with:
+          extension_id: ${{ secrets.EXTENSION_ID }}
+          client_id: ${{ secrets.CLIENT_ID }}
+          client_secret: ${{ secrets.CLIENT_SECRET }}
+          refresh_token: ${{ secrets.REFRESH_TOKEN }}
+          zip_file: 'extension.zip'
+          publish_target: 'default'
