@@ -1,6 +1,8 @@
 name: Package Extension
 
 on:
+  pull_request:
+    branches: ["main"]
   push:
     branches: [ "main" ]
 
@@ -20,12 +22,10 @@ jobs:
           node-version: 16
 
       # -------------------------
-      # JS Lint (using ESLint)
-      - name: Install ESLint
-        run: npm install -g eslint
-
-      - name: Lint JavaScript
-        run: eslint "**/*.js"
+      - name: Install modules
+        run: yarn
+      - name: Run ESLint
+        run: eslint . --ext .js,.jsx,.ts,.tsx
 
       # -------------------------
       # Spell Check (example: codespell)
