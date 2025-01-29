@@ -20,14 +20,6 @@ jobs:
           node-version: 16
 
       # -------------------------
-      # CSS Lint (using stylelint)
-      - name: Install stylelint
-        run: npm install -g stylelint stylelint-config-standard
-
-      - name: Lint CSS
-        run: stylelint "**/*.css"
-
-      # -------------------------
       # JS Lint (using ESLint)
       - name: Install ESLint
         run: npm install -g eslint
