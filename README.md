@@ -61,6 +61,8 @@ By default, when you load your extension locally, it will appear in the extensio
 3. Create a new API Key
 4. Copy the key and keep for next step
 
+![[docs/get-api.png]]
+
 ### Add API Key to extension
 
 1. Access Settings page of extension
