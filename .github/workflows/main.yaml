@@ -14,29 +14,55 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # -------------------------
-      # HTML Lint (using HTMLHint or W3C Action)
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       # -------------------------
-      # Only if all lint steps pass, zip the extension
+      # Extract version from manifest.json
+      - name: Extract version from manifest
+        id: extension_version
+        run: |
+          EXT_VERSION=$(jq -r '.version' manifest.json)
+          echo "EXT_VERSION=$EXT_VERSION" >> $GITHUB_ENV
+
+      
+
+      # -------------------------
+      # Zip the extension for Chrome Store and Github Releases
       - name: Zip the extension
         run: |
-          zip -r extension.zip . \
+          zip -r amrop-extension.zip . \
             -x ".git*" \
             -x ".github*" \
             -x "README.md" \
-            -x "*.yml"
+            -x "docs/" \
+            -x "docs/*" 
+
+      # -------------------------
+      # Create GitHub Release using version from manifest.json
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: "v${{ env.EXT_VERSION }}"
+          release_name: "v${{ env.EXT_VERSION }}"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: './amrop-extension.zip'
+          asset_name: 'amrop-extension.zip'
+          asset_content_type: 'application/zip'
 
       # -------------------------
       # Publish to Chrome Web Store
       - name: Publish to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
-          file-path: 'extension.zip'
+          file-path: 'amrop-extension.zip'
           extension-id: ${{ secrets.EXTENSION_ID }}
           client-id: ${{ secrets.CLIENT_ID }}
           client-secret: ${{ secrets.CLIENT_SECRET }}

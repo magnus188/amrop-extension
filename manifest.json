@@ -1,17 +1,17 @@
 {
     "name": "Listeprepp",
     "description": "Listeprepp fra linkedin profil",
-    "version": "1.0",
+    "version": "0.9.1",
     "manifest_version": 3,
     "permissions": [
         "storage",
         "activeTab"
     ],
     "background": {
-        "service_worker": "service-worker.js"
+        "service_worker": "scripts/service-worker.js"
     },
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup/popup.html"
     },
     "icons": {
         "16": "assets/icon16.png",
@@ -19,7 +19,7 @@
         "48": "assets/icon48.png",
         "128": "assets/icon128.png"
     },
-    "options_page": "options.html",
+    "options_page": "options/options.html",
     "content_scripts": [
         {
             "matches": [
@@ -27,7 +27,7 @@
                 "https://www.linkedin.com/in/*/details/experience*"
             ],
             "js": [
-                "content.js"
+                "scripts/content.js"
             ]
         }
     ],
