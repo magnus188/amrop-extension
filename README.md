@@ -1,18 +1,38 @@
+# Documentation Amrop listeprepp generator 
+![[assets/icon128.png]]
+
+## Table of Contents
+- [Installation](#installation)
+  - [Manual Installation](#manual-installation)
+    - [Download](#download)
+    - [Load extension](#load-extension)
+- [Pin the extension](#pin-the-extension)
+- [Setup](#setup)
+  - [Get free API Key](#get-free-api-key)
+  - [Add API Key to extension](#add-api-key-to-extension)
+- [Usage](#usage)
+  - [Generate Listeprepp](#generate-listeprepp)
+- [Settings](#settings)
+  - [System prompt](#system-prompt)
+    - [RICE structure](#rice-structure)
+      - [Example - Head of Sustainability Coop Norge](#example---head-of-sustainability-coop-norge)
 
 
 ## Installation
 
 The chrome extension can be installed in two ways:
 
-1. Via the Chrome Store (Currently Unavailable)
+1. Via the Chrome Store (⚠️ Currently Unavailable ⚠️)
 2. Manual installation
 
 ### Manual Installation
 
 #### Download 
-Download the newest version from this GitHub repository: []
+Download the newest release from this GitHub repository: [https://github.com/magnus188/amrop-extension/releases](https://github.com/magnus188/amrop-extension/releases)
 
-IMAGE HERE
+Releases can also be found on the main repository page: [https://github.com/magnus188/amrop-extension](https://github.com/magnus188/amrop-extension)
+
+![[docs/release.png]]
 
 #### Load extension
 
@@ -21,7 +41,7 @@ IMAGE HERE
 	- Alternatively, click the Extensions menu puzzle button and select **Manage Extensions** at the bottom of the menu.
 	- Or, click the Chrome menu, hover over **More Tools,** then select **Extensions**.
 3. Enable Developer Mode by clicking the toggle switch next to **Developer mode**.
-4. Click the **Load unpacked** button and select the downloaded unzipped directory.
+4. Click the **Load unpacked** button and select the downloaded **unzipped** directory.
 
 ![[docs/load-extension.png]]
 
