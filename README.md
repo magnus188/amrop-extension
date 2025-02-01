@@ -1,5 +1,5 @@
 # Documentation Amrop listeprepp generator 
-![[./assets/icon128.png]]
+![icon](./assets/icon128.png)
 
 ## Table of Contents
 - [Installation](#installation)
@@ -32,7 +32,7 @@ Download the newest release from this GitHub repository: [https://github.com/mag
 
 Releases can also be found on the main repository page: [https://github.com/magnus188/amrop-extension](https://github.com/magnus188/amrop-extension)
 
-![[./docs/release.png]]
+![release](./docs/release.png)
 
 #### Load extension
 
@@ -43,13 +43,13 @@ Releases can also be found on the main repository page: [https://github.com/magn
 3. Enable Developer Mode by clicking the toggle switch next to **Developer mode**.
 4. Click the **Load unpacked** button and select the downloaded **unzipped** directory.
 
-![[./docs/load-extension.png]]
+![extension](./docs/load-extension.png)
 
 ## Pin the extension
 
 By default, when you load your extension locally, it will appear in the extensions menu. Pin your extension to the toolbar to quickly access your extension.
 
-![[./docs/pin-extension.png]]
+![pin extension](./docs/pin-extension.png)
 
 ## Setup
 
@@ -61,17 +61,17 @@ By default, when you load your extension locally, it will appear in the extensio
 3. Create a new API Key
 4. Copy the key and keep for next step
 
-![[./docs/get-api.png]]
+![get_api](./docs/get-api.png)
 
 ### Add API Key to extension
 
 1. Access Settings page of extension
 
-![[./docs/settings-button.png]]
+![settings-button](./docs/settings-button.png)
 
 2. Paste in your API Key and click save!
 
-![[./docs/add-api.png]]
+![add-api](./docs/add-api.png)
 
 
 ## Usage
@@ -81,16 +81,16 @@ By default, when you load your extension locally, it will appear in the extensio
 ⚠️⚠️ **NOTE:** As of `v0.9.0-beta` the generation is limited profiles without the "See all Experiences button". This will be enabled in future version.
 
 1. Go to a LinkedIn profile
-   ![[./docs/profile.png]]
+![profile](./docs/profile.png)
    
 2. Click "Generate"
    
-   ![[./docs/generate.png]]
+![generate](./docs/generate.png)
    
 3. Listeprepp is now generated and copied to your clipboard!
 	- NOTE: To re-copy last generation to clipboard, press copy button.
    
-![[./docs/copy.png]]
+![copy](./docs/copy.png)
 
 ## Settings
 
