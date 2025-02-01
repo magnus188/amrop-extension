@@ -1,7 +1,7 @@
 {
     "name": "Listeprepp",
     "description": "Listeprepp fra linkedin profil",
-    "version": "0.9.3",
+    "version": "1.0.1",
     "manifest_version": 3,
     "permissions": [
         "storage",
