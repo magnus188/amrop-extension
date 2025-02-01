@@ -2,6 +2,7 @@ name: Package Extension
 
 permissions:
   contents: write
+
 on:
   pull_request:
     branches: ["main"]
@@ -51,13 +52,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: './amrop-extension.zip'
-          asset_name: 'amrop-extension.zip'
-          asset_content_type: 'application/zip'
 
       # -------------------------
       # Publish to Chrome Web Store
