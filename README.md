@@ -102,7 +102,10 @@ The extension can be personalized to your use:
 
 The system prompt for the model is the initial text or message that is provided by the user to the API in order to generate a response from the model. The system prompt can be thought of as the input or query that the model uses to generate its response. The quality and specificity of the system prompt can have a significant impact on the relevance and accuracy of the model's response. Therefore, it is important to provide a clear and concise system prompt that accurately conveys the user's intended message or question.
 
-The default system prompt for the extension:
+#### RICE structure
+The RICCE structure can help optimize system prompts by ensuring clarity, specificity, and relevance. **Role**, **Instruction**, **Context**, **Constraints**, and **Example** provide a structured approach to crafting effective prompts that guide the model toward generating accurate and meaningful responses. By defining the AI’s function, specifying the task, providing relevant background, setting limitations, and including reference examples, RICCE enhances the precision and coherence of system prompts. This structured design minimizes ambiguity and maximizes the model’s ability to understand and fulfill the user’s intent, ultimately improving the quality of generated responses.
+
+The default system prompt for the extension follows RICCE principle:
 
 ```
 You are an AI assistant that summarizes LinkedIn profiles for a headhunter. Given the following profile data in JSON format, please provide the following sections in plain text:
@@ -135,27 +138,3 @@ Companies
 
 Input:
 ```
-
-#### RICE structure
-
-One system promp structure is the RICE structure:
-```
-ROLE:
-INSTRUCTIONS:
-CONTEXT:
-CONSTRAINTS:
-EXAMPLES:
-```
-#####  Example - Head of Sustainability Coop Norge:
-```
-ROLE: Assume the role of a researcher in executive search
-
-INSTRUCTIONS: Write a candidate profile with introduction to the role, most critical work tasks and candidate requirements for the head of sustainability and ESG for a FMCG retail chain in Norway
-
-CONTEXT:  the candidate will manage a team of 10 competent people. Currently the company is defining the strategy for sustainability and ESG, and want the head of Sustainability to be vital in the process of defining, getting acceptance as well as
-
-CONSTRAINTS: The candidate profile should be 300 to 500 words long
-
-EXAMPLES: Include sample blog posts on similar topics for inspiration
-```
-
