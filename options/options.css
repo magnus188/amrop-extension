@@ -28,9 +28,14 @@
 
  h2 {
      margin-top: 0;
+     font-size: 32px;
      color: #202124;
-     /* Dark Google text color */
  }
+
+ label, a {
+    font-size: 14px;
+ }
+ 
 
  .form-group {
      margin: 15px 0;
@@ -110,6 +115,27 @@
 
  .restore-button:hover {
      background-color: #cfcfcf;
+ }
+
+
+ /* Styles for the prompt tabs */
+ .prompt-tabs {
+     display: flex;
+     gap: 10px;
+     margin-bottom: 10px;
+ }
+
+ .prompt-tab {
+     padding: 8px 16px;
+     border: 1px solid #dadce0;
+     background-color: #fff;
+     cursor: pointer;
+     border-radius: 4px;
+ }
+
+ .prompt-tab.active {
+     background-color: #4285f4;
+     color: #fff;
  }
 
 
