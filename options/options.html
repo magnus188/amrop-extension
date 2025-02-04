@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>Extension Settings</title>
-<link rel="stylesheet" href="options.css">
+    <link rel="stylesheet" href="options.css">
 </head>
 
 <body>
@@ -17,12 +17,11 @@
             <input type="text" id="apiKey" class="form-control" placeholder="Enter your Gemini API Key" />
         </div>
 
-        <!-- Link to how to get a free Gemini API key -->
+        <!-- Link for Gemini API Key info -->
         <div class="form-group">
             <label>Need a Gemini API Key?</label>
-            <a href="https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw.." target="_blank">
-                Click here to get one for free
-            </a>
+            <a href="https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw.."
+                target="_blank">Click here to get one for free</a>
         </div>
 
         <!-- Output language selection -->
@@ -31,28 +30,40 @@
             <select id="languageSelect" class="form-control">
                 <option value="English">English</option>
                 <option value="Norwegian">Norwegian</option>
+                <option value="Finnish">Finnish</option>
             </select>
         </div>
 
-        <!-- LLM initial prompt instruction -->
+        <!-- System Prompt Tabs Section -->
         <div class="form-group">
-            <label for="promptInstruction">LLM Initial Prompt Instruction</label>
-            <textarea id="promptInstruction" class="form-control" rows="5"
-                placeholder="Enter your custom instructions here..."></textarea>
-                <!-- Restore to Default Button -->
-                <button id="restoreDefault" class="restore-button" type="button">
-                    Restore to Default prompt
+            <label>System Prompts</label>
+            <div class="prompt-tabs">
+                <button type="button" class="prompt-tab" data-prompt="prompt1">
+                    Prompt 1
                 </button>
+                <button type="button" class="prompt-tab" data-prompt="prompt2">
+                    Prompt 2
+                </button>
+                <button type="button" class="prompt-tab" data-prompt="prompt3">
+                    Prompt 3
+                </button>
+            </div>
+        </div>
+        <div class="form-group">
+            <!-- This textarea shows the content for the active prompt -->
+            <textarea id="systemPromptText" class="form-control" rows="5" placeholder="Enter your prompt..."></textarea>
+            <!-- Restore Default for the active prompt -->
+            <button id="restoreDefaultPrompt" class="restore-button" type="button">
+                Restore Default Prompt
+            </button>
         </div>
 
-        <!-- Save button -->
-        <button id="save" class="save-button">
-            Save
-        </button>
+        <!-- Save button for all settings -->
+        <button id="save" class="save-button">Save</button>
     </div>
     <div id="snackbar"></div>
-</body>
 
-<script src="options.js"></script>
+    <script src="options.js"></script>
+</body>
 
 </html>
