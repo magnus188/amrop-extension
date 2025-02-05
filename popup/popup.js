@@ -28,8 +28,6 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
 // Listen for the SCRAPE_COMPLETE message sent from the full-page content script.
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'SCRAPE_COMPLETE') {
-        console.log(msg);
-        console.log(msg.info);
         processScrapedData(msg.info);
     }
 });

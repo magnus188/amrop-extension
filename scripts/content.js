@@ -330,25 +330,31 @@ function parsePosition(positionBlock, fallbackCompany) {
  * A function to wait until the experiences container is present or until timeout.
  * Adjust the selector or timing as needed if LinkedIn changes the DOM.
  */
-function waitForExperiencesContainer(timeout = 2000) {
-    return new Promise((resolve, reject) => {
-        const interval = 100;
-        let elapsed = 0;
-        const check = () => {
-            const container = document.querySelector('.scaffold-finite-scroll__content');
-            if (container) {
-                resolve(container);
-            } else {
-                elapsed += interval;
-                if (elapsed < timeout) {
-                    setTimeout(check, interval);
-                } else {
-                    // If container not found in time, still resolve (or reject).
-                    resolve(null);
-                }
+function waitForExperiencesContainer(selector = '.scaffold-finite-scroll__content', timeout = 2000) {
+    return new Promise((resolve) => {
+        // If it's already there, resolve immediately
+        const existing = document.querySelector(selector);
+        if (existing) {
+            resolve(existing);
+            return;
+        }
+
+        // Otherwise, observe the DOM for new elements
+        const observer = new MutationObserver(() => {
+            const found = document.querySelector(selector);
+            if (found) {
+                observer.disconnect();
+                resolve(found);
             }
-        };
-        check();
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // If still not found after X ms, stop and return null.
+        setTimeout(() => {
+            observer.disconnect();
+            resolve(null);
+        }, timeout);
     });
 }
 
@@ -400,24 +406,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  */
 chrome.storage.local.get(['nextPageScrapeNeeded'], (res) => {
     if (res.nextPageScrapeNeeded) {
-        waitForExperiencesContainer().then(() => {
-            chrome.storage.local.get(['aboutText', 'name'], (storedRes) => {
-                const storedAbout = storedRes.aboutText || getAboutSection();
-                const storedName = storedRes.name || getProfileName();
-                const experiences = scrapeExperiences();
+        // Quick immediate check
+        let container = document.querySelector('.scaffold-finite-scroll__content');
+        if (container) {
+            // Already loaded, so scrape now
+            doFullScrape();
+        } else {
+            waitForExperiencesContainer('.scaffold-finite-scroll__content', 2000).then(() => {
+                chrome.storage.local.get(['aboutText', 'name'], (storedRes) => {
+                    const storedAbout = storedRes.aboutText || getAboutSection();
+                    const storedName = storedRes.name || getProfileName();
+                    const experiences = scrapeExperiences();
 
-                const info = {
-                    name: storedName,
-                    about: storedAbout,
-                    experiences
-                };
+                    const info = {
+                        name: storedName,
+                        about: storedAbout,
+                        experiences
+                    };
 
-                // Reset the flag
-                chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
-                    // Send the data back to your extension (e.g., the popup).
-                    chrome.runtime.sendMessage({ type: 'SCRAPE_COMPLETE', info });
+                    // Reset the flag
+                    chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
+                        // Send the data back to your extension (e.g., the popup).
+                        chrome.runtime.sendMessage({ type: 'SCRAPE_COMPLETE', info });
+                    });
                 });
             });
-        });
+        }
     }
 });
