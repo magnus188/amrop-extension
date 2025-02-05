@@ -6,9 +6,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             const { apiKey, language, systemPrompts, activePrompt } = data;
 
             promptInstruction = systemPrompts[activePrompt]
-            console.log(systemPrompts);
-            console.log(activePrompt);
-            console.log(promptInstruction);
+
             if (!apiKey) {
                 sendResponse({ error: 'No API key provided.' });
                 return;

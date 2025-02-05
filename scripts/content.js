@@ -1,81 +1,16 @@
-
 //////////////////////////////
-// Maybe go to full page //
+// 1) Helper Functions     //
 //////////////////////////////
-function maybeGoToFullExperiencePage() {
-    return new Promise((resolve, reject) => {
-        const seeAllLink = document.querySelector('#navigation-index-see-all-experiences');
-        if (seeAllLink) {
-            const about = getAboutSection();
-            const name = getProfileName();
 
-            // Store 'aboutText', 'name', and set a flag indicating we need to scrape the full page
-            chrome.storage.local.set({ aboutText: about, name: name, nextPageScrapeNeeded: true }, () => {
-                // Navigate to the full experiences page
-                window.location.href = seeAllLink.href;
-                // No resolve here because the page is navigating away
-            });
-        } else {
-            // We're likely on the full experiences page or a short page with no "see all" link
-            chrome.storage.local.get(['aboutText', 'name', 'nextPageScrapeNeeded'], (res) => {
-                const { aboutText, name, nextPageScrapeNeeded } = res;
-
-                if (nextPageScrapeNeeded) {
-                    let storedAbout = aboutText || 'N/A';
-                    let storedName = name || 'N/A';
-
-                    // If 'aboutText' or 'name' is missing, attempt to scrape them again
-                    if (storedAbout === 'N/A') {
-                        storedAbout = getAboutSection();
-                    }
-                    if (storedName === 'N/A') {
-                        storedName = getProfileName();
-                    }
-
-                    // Scrape the experiences
-                    const experiences = scrapeExperiences();
-
-                    // Compile the final data object
-                    const info = {
-                        name: storedName,
-                        about: storedAbout,
-                        experiences
-                    };
-
-                    // Reset the flag to indicate scraping is complete
-                    chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
-                        // Resolve the promise with the final data
-                        resolve(info);
-                    });
-                } else {
-                    // Optional: Handle scenarios where scraping isn't needed
-                    // For example, scrape experiences without needing to combine with stored data
-                    const storedAbout = aboutText || getAboutSection();
-                    const storedName = name || getProfileName();
-                    const experiences = scrapeExperiences();
-
-                    const info = {
-                        name: storedName,
-                        about: storedAbout,
-                        experiences
-                    };
-
-                    resolve(info);
-                }
-            });
-        }
-    });
-}
-
-////////////////////////////////////////
-// Function to scrape About //
-////////////////////////////////////////
+/**
+ * Scrape the "About" section from the DOM.
+ */
 function getAboutSection() {
     let aboutText = 'N/A';
 
     // 1) Locate the #about anchor
     const aboutAnchor = document.querySelector('#about');
-    if (!aboutAnchor) return aboutText; // none
+    if (!aboutAnchor) return aboutText;
 
     // 2) Move up to the section
     const aboutSection = aboutAnchor.closest('section.artdeco-card');
@@ -99,20 +34,20 @@ function getAboutSection() {
     return aboutText;
 }
 
-////////////////////////////////////////
-// Function to get Name //
-////////////////////////////////////////
+/**
+ * Scrape the profile name from the DOM.
+ */
 function getProfileName() {
     let name = 'N/A';
 
-    // Attempt 1: Look for the main <h1> tag that typically contains the name
+    // Attempt 1: Look for the main <h1> tag
     const nameHeader = document.querySelector('h1.text-heading-xlarge.inline.t-24.v-align-middle.break-words');
     if (nameHeader) {
         name = nameHeader.textContent.trim();
         return name;
     }
 
-    // Attempt 2: Alternative selector if the first one fails
+    // Attempt 2: Alternative selector
     const alternativeNameHeader = document.querySelector('li.inline.t-24.t-black.t-normal.break-words');
     if (alternativeNameHeader) {
         name = alternativeNameHeader.textContent.trim();
@@ -126,43 +61,49 @@ function getProfileName() {
         return name;
     }
 
-    // Attempt 4: Fallback to the page's title tag (less reliable)
+    // Attempt 4: Fallback to the page's title tag
     if (document.title) {
-        // Typically, LinkedIn profile titles are in the format "First Last | LinkedIn"
+        // e.g., "First Last | LinkedIn"
         const titleParts = document.title.split('|');
         if (titleParts.length > 0) {
             name = titleParts[0].trim();
         }
     }
-
     return name;
 }
 
-////////////////////////////////////
-// The same experiences logic  //
-////////////////////////////////////
+//////////////////////////////
+// 2) Main Scrape Functions //
+//////////////////////////////
+
+/**
+ * Decide how to scrape the experiences.
+ *  - Try "short-page" approach first.
+ *  - If empty, use the "full-page" approach.
+ */
 function scrapeExperiences() {
-    // Try the "short-page" approach first:
+    // Try the short-page approach first:
     let experiences = scrapeExperiencesShortPage();
     if (experiences && experiences.length > 0) {
         return experiences;
     }
 
+    // Otherwise, use the full-page approach.
     experiences = scrapeExperiencesFullPage();
     return experiences;
 }
 
-// --------------------------
-// 1) Short-page approach
-// --------------------------
+/**
+ * SHORT-PAGE APPROACH
+ */
 function scrapeExperiencesShortPage() {
     const experiences = [];
 
     // 1) Look for #experience
     const experienceDiv = document.querySelector('#experience');
     if (!experienceDiv) {
-        // No #experience div found (likely full page)
-        return experiences;  // empty
+        // No #experience div found (likely already full page)
+        return experiences; // empty
     }
 
     const experienceSection = experienceDiv.closest('section.artdeco-card');
@@ -172,14 +113,12 @@ function scrapeExperiencesShortPage() {
     }
 
     // 2) Within that section, get all blocks that have data-view-name="profile-component-entity"
-    const allBlocks = experienceSection.querySelectorAll(
-        'div[data-view-name="profile-component-entity"]'
-    );
+    const allBlocks = experienceSection.querySelectorAll('div[data-view-name="profile-component-entity"]');
 
     // 3) Filter to top-level
     const topLevelBlocks = [...allBlocks].filter((block) => {
         const parent = block.parentElement?.closest('div[data-view-name="profile-component-entity"]');
-        if (parent) return false; // skip if nested
+        if (parent) return false; // skip nested
         return hasJobTitle(block);
     });
 
@@ -191,13 +130,13 @@ function scrapeExperiencesShortPage() {
             .filter(hasJobTitle);
 
         if (childBlocks.length === 0) {
-            // single
+            // Single
             const singlePos = parsePosition(companyBlock, fallbackCompany);
             if (singlePos.jobTitle !== 'N/A' || singlePos.company !== 'N/A') {
                 experiences.push(singlePos);
             }
         } else {
-            // multiple
+            // Multiple
             childBlocks.forEach((posBlock) => {
                 const subPos = parsePosition(posBlock, fallbackCompany);
                 if (subPos.jobTitle !== 'N/A' || subPos.company !== 'N/A') {
@@ -210,64 +149,39 @@ function scrapeExperiencesShortPage() {
     return experiences;
 }
 
-// --------------------------
-// 2) Full-page approach
-// --------------------------
-function isInBrowsemapSection(block) {
-    // 1) Find the nearest <section data-view-name="profile-card">
-    const section = block.closest('section[data-view-name="profile-card"]');
-    if (!section) return false;
-
-    // 2) Look for the H2 heading in that section
-    const headingEl = section.querySelector('h2.pvs-header__title');
-    if (!headingEl) return false;
-
-    // 3) Convert the heading text to lowercase
-    const headingText = headingEl.textContent.trim().toLowerCase();
-
-    // 4) If the heading text is "flere profiler til deg" OR "people also viewed" etc.,
-    //    then this block is in the browsemap
-    if (headingText.includes('flere profiler') || headingText.includes('people also viewed')) {
-        return true;
-    }
-    return false;
-}
-
+/**
+ * FULL-PAGE APPROACH
+ */
 function scrapeExperiencesFullPage() {
     const experiences = [];
 
     // Grab all "profile-component-entity" blocks in the DOM
     const allBlocks = document.querySelectorAll('div[data-view-name="profile-component-entity"]');
 
+    // Filter to top-level blocks (exclude nested, exclude "people also viewed" side sections, etc.)
     const topLevelBlocks = [...allBlocks].filter((block) => {
-        // 1) Skip if nested
         const parent = block.parentElement?.closest('div[data-view-name="profile-component-entity"]');
-        if (parent) return false;
-
-        // 2) Skip if it’s in the browsemap side section
+        if (parent) return false; // skip nested
         if (isInBrowsemapSection(block)) {
-            return false;
+            return false; // skip 'people also viewed'
         }
-
-        // 3) Must have a job title
         return hasJobTitle(block);
     });
 
     topLevelBlocks.forEach((companyBlock) => {
-        // same parse logic as before
         const fallbackCompany = getCompanyName(companyBlock);
-
-        const childBlocks = [
-            ...companyBlock.querySelectorAll('div[data-view-name="profile-component-entity"]'),
-        ]
-            .filter((b) => b !== companyBlock && hasJobTitle(b));
+        const childBlocks = [...companyBlock.querySelectorAll('div[data-view-name="profile-component-entity"]')]
+            .filter((b) => b !== companyBlock)
+            .filter(hasJobTitle);
 
         if (childBlocks.length === 0) {
+            // Single
             const singlePos = parsePosition(companyBlock, fallbackCompany);
             if (singlePos.jobTitle !== 'N/A' || singlePos.company !== 'N/A') {
                 experiences.push(singlePos);
             }
         } else {
+            // Multiple
             childBlocks.forEach((posBlock) => {
                 const subPos = parsePosition(posBlock, fallbackCompany);
                 if (subPos.jobTitle !== 'N/A' || subPos.company !== 'N/A') {
@@ -280,18 +194,45 @@ function scrapeExperiencesFullPage() {
     return experiences;
 }
 
-//////////////////////////////////////
-// Supporting sub-functions etc. //
-//////////////////////////////////////
+//////////////////////////////
+// 3) Supporting Functions  //
+//////////////////////////////
+
+/**
+ * Check if a block is in the "browsemap" side section (like "people also viewed").
+ */
+function isInBrowsemapSection(block) {
+    // 1) Find the nearest <section data-view-name="profile-card">
+    const section = block.closest('section[data-view-name="profile-card"]');
+    if (!section) return false;
+
+    // 2) Look for the <h2> heading
+    const headingEl = section.querySelector('h2.pvs-header__title');
+    if (!headingEl) return false;
+
+    // 3) Convert heading text to lowercase and check if it’s some "people also viewed" or similar
+    const headingText = headingEl.textContent.trim().toLowerCase();
+    if (headingText.includes('flere profiler') || headingText.includes('people also viewed')) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Check if a block has a job title candidate.
+ */
 function hasJobTitle(block) {
     const jobTitleCandidate = block.querySelector(`
-      div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
-      div.t-bold span[aria-hidden="true"],
-      span.t-bold[aria-hidden="true"]
-    `);
+    div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
+    div.t-bold span[aria-hidden="true"],
+    span.t-bold[aria-hidden="true"]
+  `);
     return !!jobTitleCandidate;
 }
 
+/**
+ * Attempt to extract the company name from a block.
+ */
 function getCompanyName(companyBlock) {
     // Attempt #1
     let el = companyBlock.querySelector(
@@ -307,7 +248,7 @@ function getCompanyName(companyBlock) {
 
     let company = el ? el.textContent.trim() : 'N/A';
 
-    // Attempt #3: alt text
+    // Attempt #3: alt text from logo
     if (company === 'N/A') {
         const logoImg = companyBlock.querySelector(
             'a[data-field="experience_company_logo"] img[alt*="-logo"]'
@@ -318,7 +259,7 @@ function getCompanyName(companyBlock) {
         }
     }
 
-    // Attempt #4: "Amrop · Heltid" => "Amrop"
+    // Attempt #4: fallback from the second line (like "Amrop · Heltid" => "Amrop")
     if (company === 'N/A') {
         const secondLine = companyBlock.querySelector('span.t-14.t-normal > span[aria-hidden="true"]');
         if (secondLine) {
@@ -334,6 +275,9 @@ function getCompanyName(companyBlock) {
     return company;
 }
 
+/**
+ * Parse a position (jobTitle, company, duration, location) from a block.
+ */
 function parsePosition(positionBlock, fallbackCompany) {
     let jobTitle = 'N/A';
     let company = fallbackCompany || 'N/A';
@@ -342,10 +286,10 @@ function parsePosition(positionBlock, fallbackCompany) {
 
     // Title
     const jobTitleEl = positionBlock.querySelector(`
-      div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
-      div.t-bold span[aria-hidden="true"],
-      span.t-bold[aria-hidden="true"]
-    `);
+    div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
+    div.t-bold span[aria-hidden="true"],
+    span.t-bold[aria-hidden="true"]
+  `);
     if (jobTitleEl) {
         jobTitle = jobTitleEl.textContent.trim();
     }
@@ -354,16 +298,18 @@ function parsePosition(positionBlock, fallbackCompany) {
     const lightLines = [
         ...positionBlock.querySelectorAll('span.t-14.t-normal.t-black--light')
     ];
-
     const textLines = lightLines.map((line) => {
         const hiddenSpan = line.querySelector('span[aria-hidden="true"]');
         return hiddenSpan ? hiddenSpan.textContent.trim() : '';
     });
 
-    if (textLines[0]) duration = textLines[0];
+    // If textLines[0] is e.g. "sep. 2023 - Nå · 1 år 6måneder"
+    if (textLines[0]) {
+        duration = textLines[0];
+    }
 
+    // If textLines[1] is e.g. "Oslo, Norway · På kontoret" => "Oslo, Norway"
     if (textLines.length > 1 && textLines[1]) {
-        // e.g. "Oslo, Norway · På kontoret" => "Oslo, Norway"
         const locParts = textLines[1].split(' · ');
         location = locParts[0].trim();
     }
@@ -376,12 +322,102 @@ function parsePosition(positionBlock, fallbackCompany) {
     return { jobTitle, company, duration, location };
 }
 
+//////////////////////////////
+// 4) Page Load "Wait" Logic  //
+//////////////////////////////
+
+/**
+ * A function to wait until the experiences container is present or until timeout.
+ * Adjust the selector or timing as needed if LinkedIn changes the DOM.
+ */
+function waitForExperiencesContainer(timeout = 2000) {
+    return new Promise((resolve, reject) => {
+        const interval = 100;
+        let elapsed = 0;
+        const check = () => {
+            const container = document.querySelector('.scaffold-finite-scroll__content');
+            if (container) {
+                resolve(container);
+            } else {
+                elapsed += interval;
+                if (elapsed < timeout) {
+                    setTimeout(check, interval);
+                } else {
+                    // If container not found in time, still resolve (or reject).
+                    resolve(null);
+                }
+            }
+        };
+        check();
+    });
+}
+
+//////////////////////////////
+// 5) Message Listener      //
+//////////////////////////////
+
+/**
+ *  Listen for the "scrapeProfile" request from the popup.
+ *  - If "see more" link is found, store about/name, set the flag, then navigate.
+ *  - Otherwise, scrape immediately and return the data.
+ */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "scrapeProfile") {
-        maybeGoToFullExperiencePage().then((info) => {
-            console.log(info);
+        const seeAllLink = document.querySelector('#navigation-index-see-all-experiences');
+
+        if (seeAllLink) {
+            // Store data and navigate away
+            const about = getAboutSection();
+            const name = getProfileName();
+            chrome.storage.local.set(
+                { aboutText: about, name: name, nextPageScrapeNeeded: true },
+                () => {
+                    window.location.href = seeAllLink.href;
+                }
+            );
+            // Don't call sendResponse because we're navigating.
+        } else {
+            // Already on full experiences page (or no see-more link)
+            const info = {
+                name: getProfileName(),
+                about: getAboutSection(),
+                experiences: scrapeExperiences()
+            };
             sendResponse(info);
+        }
+
+        return true; // Keep the channel open for async calls if needed.
+    }
+});
+
+//////////////////////////////
+// 6) Auto-Scrape On Load   //
+//////////////////////////////
+
+/**
+ *  On load of any LinkedIn page, check if we need a "full experiences" scrape.
+ *  If yes, wait for container, then scrape, then reset flag, then send "SCRAPE_COMPLETE".
+ */
+chrome.storage.local.get(['nextPageScrapeNeeded'], (res) => {
+    if (res.nextPageScrapeNeeded) {
+        waitForExperiencesContainer().then(() => {
+            chrome.storage.local.get(['aboutText', 'name'], (storedRes) => {
+                const storedAbout = storedRes.aboutText || getAboutSection();
+                const storedName = storedRes.name || getProfileName();
+                const experiences = scrapeExperiences();
+
+                const info = {
+                    name: storedName,
+                    about: storedAbout,
+                    experiences
+                };
+
+                // Reset the flag
+                chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
+                    // Send the data back to your extension (e.g., the popup).
+                    chrome.runtime.sendMessage({ type: 'SCRAPE_COMPLETE', info });
+                });
+            });
         });
-        return true; // keep port open
     }
 });
