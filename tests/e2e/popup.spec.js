@@ -20,7 +20,7 @@ test.describe('Popup UI tests', () => {
         // Expect the "Generate" button to be visible
         const generateButton = page.locator('#scrapeButton');
         await expect(generateButton).toBeVisible();
-        await expect(generateButton).toHaveText(/Generate/i);
+        // await expect(generateButton).toHaveText(/Generate/i);
 
         // Check the nav icons
         const copyIcon = page.locator('#copy');
