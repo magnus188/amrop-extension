@@ -40,7 +40,7 @@ jobs:
             -x "tests/" \
             -x "tests/*" \
             -x "package.json" \
-            -x "playwright.config.ts"
+            -x "playwright.config.ts" \
 
       # -------------------------
       # Create GitHub Release using version from manifest.json
