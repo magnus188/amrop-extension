@@ -46,7 +46,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ env.EXT_VERSION }}"
+          tag_name: "beta"
           release_name: "v${{ env.EXT_VERSION }}"
           draft: false
           prerelease: false
