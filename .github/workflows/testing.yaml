@@ -20,10 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Install playwright browsers
-        run: ngx playwright install
-
+        
       - name: Run E2E Tests
         run: npm run test:ui
 
