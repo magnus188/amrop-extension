@@ -1,16 +1,16 @@
 // service-worker.js
 
+
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SEND_PROMPT') {
         chrome.storage.sync.get(['apiKey', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
             const { apiKey, language, systemPrompts, activePrompt } = data;
 
             promptInstruction = systemPrompts[activePrompt]
-            console.log(systemPrompts);
-            console.log(activePrompt);
-            console.log(promptInstruction);
+
             if (!apiKey) {
-                sendResponse({ error: 'No API key provided.' });
+                sendResponse({ error: 'No API key provided. Add one in settings.' });
                 return;
             }
 

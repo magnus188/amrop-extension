@@ -1,11 +1,8 @@
-//////////////////////////////
-// 1) Helper Functions     //
-//////////////////////////////
 
 /**
  * Scrape the "About" section from the DOM.
  */
-function getAboutSection() {
+export function getAboutSection() {
     let aboutText = 'N/A';
 
     // 1) Locate the #about anchor
@@ -37,7 +34,7 @@ function getAboutSection() {
 /**
  * Scrape the profile name from the DOM.
  */
-function getProfileName() {
+export function getProfileName() {
     let name = 'N/A';
 
     // Attempt 1: Look for the main <h1> tag
@@ -81,7 +78,7 @@ function getProfileName() {
  *  - Try "short-page" approach first.
  *  - If empty, use the "full-page" approach.
  */
-function scrapeExperiences() {
+export function scrapeExperiences() {
     // Try the short-page approach first:
     let experiences = scrapeExperiencesShortPage();
     if (experiences && experiences.length > 0) {
@@ -355,89 +352,5 @@ function waitForExperiencesContainer(selector = '.scaffold-finite-scroll__conten
             observer.disconnect();
             resolve(null);
         }, timeout);
-    });
-}
-
-//////////////////////////////
-// 5) Message Listener      //
-//////////////////////////////
-
-/**
- *  Listen for the "scrapeProfile" request from the popup.
- *  - If "see more" link is found, store about/name, set the flag, then navigate.
- *  - Otherwise, scrape immediately and return the data.
- */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "scrapeProfile") {
-        const seeAllLink = document.querySelector('#navigation-index-see-all-experiences');
-
-        if (seeAllLink) {
-            // Store data and navigate away
-            const about = getAboutSection();
-            const name = getProfileName();
-            chrome.storage.local.set(
-                { aboutText: about, name: name, nextPageScrapeNeeded: true },
-                () => {
-                    window.location.href = seeAllLink.href;
-                }
-            );
-            // Don't call sendResponse because we're navigating.
-        } else {
-            // Already on full experiences page (or no see-more link)
-            const info = {
-                name: getProfileName(),
-                about: getAboutSection(),
-                experiences: scrapeExperiences()
-            };
-            console.log(scrapeExperiences())
-            sendResponse(info);
-        }
-
-        return true; // Keep the channel open for async calls if needed.
-    }
-});
-
-//////////////////////////////
-// 6) Auto-Scrape On Load   //
-//////////////////////////////
-
-/**
- *  On load of any LinkedIn page, check if we need a "full experiences" scrape.
- *  If yes, wait for container, then scrape, then reset flag, then send "SCRAPE_COMPLETE".
- */
-chrome.storage.local.get(['nextPageScrapeNeeded'], (res) => {
-    if (res.nextPageScrapeNeeded) {
-        // Check if the experiences container is already there:
-        let container = document.querySelector('.scaffold-finite-scroll__content');
-        if (container) {
-            doFullScrape();
-        } else {
-            waitForExperiencesContainer('.scaffold-finite-scroll__content', 2000).then(() => {
-                doFullScrape();
-            });
-        }
-    }
-});
-
-/**
- * Helper for the "on load" scenario
- */
-function doFullScrape() {
-    chrome.storage.local.get(['aboutText', 'name'], (storedRes) => {
-        const storedAbout = storedRes.aboutText || getAboutSection();
-        const storedName = storedRes.name || getProfileName();
-        const experiences = scrapeExperiences();
-
-        const info = {
-            name: storedName,
-            about: storedAbout,
-            experiences
-        };
-
-        // Reset the flag
-        chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
-            // Send final data back to extension (popup or background)
-            chrome.runtime.sendMessage({ type: 'SCRAPE_COMPLETE', info });
-        });
     });
 }

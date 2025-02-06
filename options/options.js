@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
         systemPrompts[activePrompt] = defaultPrompts[activePrompt];
         document.getElementById("systemPromptText").value = defaultPrompts[activePrompt];
         chrome.storage.sync.set({ systemPrompts }, () => {
-            if (chrome.runtime.lastError) {
+            if (chrome.runtime && chrome.runtime.lastError) {
                 console.error("Error restoring default prompt:", chrome.runtime.lastError);
                 showSnackbar("An error occurred while restoring the default prompt. Please try again.");
             } else {
