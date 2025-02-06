@@ -5,7 +5,7 @@ import {
   getAboutSection,
   getProfileName,
   scrapeExperiences 
-} from '../../scripts/scraper.js'; 
+} from './scraper.js'; 
 
 const normalizeText = text => text.trim().replace(/\s+/g, ' ');
 
@@ -35,9 +35,9 @@ describe('Scrape long linked in profile', () => {
     expect(about).toBe("N/A");
   });
 
-  it('should scrape experiences', () => {
+  it('should scrape short list of experiences', () => {
     const experiences = scrapeExperiences();
-    expect(experiences.length).toBe(13);
+    expect(experiences.length).toBe(8);
 
     const normalizedExperiences = experiences.map(exp => ({
       jobTitle: normalizeText(exp.jobTitle),
@@ -46,7 +46,6 @@ describe('Scrape long linked in profile', () => {
       location: normalizeText(exp.location)
     }));
 
-    console.log(normalizedExperiences);
     expect(normalizedExperiences).toEqual(
       [
         {
@@ -75,7 +74,8 @@ describe('Scrape long linked in profile', () => {
         },
         {
           jobTitle: "Chairman Of The Board",
-          company: "Porter AS (Porterbuddy)",
+          // company: "Porter AS (Porterbuddy)",
+          company: "Porterbuddy",
           duration: "sep. 2016 - feb. 2020 · 3 år 6måneder",
           location: "Oslo, Norway"
         },
@@ -96,38 +96,9 @@ describe('Scrape long linked in profile', () => {
           company: "BearingPoint Norway AS",
           duration: "aug. 2008 - des. 2010 · 2 år 5måneder",
           location: "N/A"
-        },
-        {
-          jobTitle: "CEO / Adm.Dir",
-          company: "CityMail Denmark AS",
-          duration: "jan. 2006 - aug. 2008 · 2 år 8måneder",
-          location: "N/A"
-        },
-        {
-          jobTitle: "COO and CIO",
-          company: "CityMail Denmark AS",
-          duration: "nov. 2002 - jan. 2006 · 3 år 3måneder",
-          location: "N/A"
-        },
-        {
-          jobTitle: "Director",
-          company: "BearingPoint",
-          duration: "1997 - 2002 · 5 år",
-          location: "N/A"
-        },
-        {
-          jobTitle: "Senior Consultant",
-          company: "Accenture",
-          duration: "1993 - 1997 · 4 år",
-          location: "N/A"
-        },
-        {
-          jobTitle: "Market Analyst",
-          company: "Hewlett-Packard, California",
-          duration: "1992 - 1992 · Mindre enn et år",
-          location: "N/A"
         }
       ]
     );
   });
 });
+

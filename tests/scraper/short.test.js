@@ -5,7 +5,7 @@ import {
   getAboutSection,
   getProfileName,
   scrapeExperiences 
-} from '../../scripts/scraper.js'; 
+} from './scraper.js'; 
 
 const normalizeText = text => text.trim().replace(/\s+/g, ' ');
 
@@ -37,7 +37,7 @@ describe('Scrape short linked in profile', () => {
   it('should scrape experiences', () => {
     const experiences = scrapeExperiences();
     expect(experiences.length).toBe(6);
-    
+
     const normalizedExperiences = experiences.map(exp => ({
       jobTitle: normalizeText(exp.jobTitle),
       company: normalizeText(exp.company),

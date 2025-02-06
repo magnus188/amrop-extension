@@ -43,10 +43,7 @@ function processScrapedData(info) {
             latestResponse = response.result;
             setLoadingState(false);
             navigator.clipboard.writeText(response.result).then(() => {
-                scrapeButton.textContent = btnTxtSuccess;
-                setTimeout(() => {
-                    scrapeButton.textContent = originalBtnText;
-                }, 2000);
+                updateButtonText(btnTxtSuccess)
             }).catch(err => {
                 console.error('Could not copy text: ', err);
             });
@@ -55,7 +52,15 @@ function processScrapedData(info) {
 }
 
 
-function updateResponseDiv (content) {
+function updateButtonText(text) {
+    scrapeButton.textContent = text;
+    setTimeout(() => {
+        scrapeButton.textContent = originalBtnText;
+    }, 2000);
+}
+
+
+function updateResponseDiv(content) {
     responseDiv.style.display = "block";
     responseDiv.textContent = content;
 
@@ -91,7 +96,7 @@ function isValidUrl(callback) {
     });
 }
 
-function setLoadingState(on=true) {
+function setLoadingState(on = true) {
     if (on) {
         scrapeButton.classList.add('loading');
     }
@@ -102,7 +107,15 @@ function setLoadingState(on=true) {
 
 
 document.getElementById('copy').addEventListener('click', () => {
-    navigator.clipboard.writeText(latestResponse)
+    try {
+        navigator.clipboard.writeText(latestResponse).then(() => {
+
+            updateButtonText(btnTxtSuccess)
+        })
+
+    } catch (e) {
+        updateResponseDiv(e.message)
+    }
 
 });
 
