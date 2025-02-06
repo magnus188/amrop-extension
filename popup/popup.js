@@ -1,10 +1,10 @@
-latestResponse = "";
+let latestResponse = "";
 
-scrapeButton = document.getElementById('scrapeButton');
-responseDiv = document.getElementById('response');
+let scrapeButton = document.getElementById('scrapeButton');
+let responseDiv = document.getElementById('response');
 
-originalBtnText = "Genererate"
-btnTxtSuccess = "Copied!"
+let originalBtnText = "Genererate"
+let btnTxtSuccess = "Copied!"
 
 document.getElementById('scrapeButton').addEventListener('click', () => {
     setLoadingState();
