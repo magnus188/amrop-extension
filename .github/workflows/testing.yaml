@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install playwright browsers
-        run: npx playwright install
+      - name: Install playwright Chromium
+        run: npx playwright install chromium
 
       - name: Run E2E Tests
         run: npm run test:ui
