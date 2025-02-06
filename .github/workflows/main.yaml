@@ -35,9 +35,12 @@ jobs:
           zip -r amrop-extension.zip . \
             -x ".git*" \
             -x ".github*" \
-            -x "README.md" \
             -x "docs/" \
             -x "docs/*" 
+            -x "tests/" \
+            -x "tests/*" \
+            -x "package.json" \
+            -x "playwright.config.ts"
 
       # -------------------------
       # Create GitHub Release using version from manifest.json
