@@ -6,6 +6,8 @@ let responseDiv = document.getElementById('response');
 let originalBtnText = "Genererate"
 let btnTxtSuccess = "Copied!"
 
+let scrapeTimeout;
+
 document.getElementById('scrapeButton').addEventListener('click', () => {
     setLoadingState();
     isValidUrl((isValid) => {
@@ -14,6 +16,14 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
             return;
         }
         scrapeButton.disabled = true;
+        
+        // Set a 30 second timeout to handle slow responses.
+        scrapeTimeout = setTimeout(() => {
+            updateResponseDiv("Error: Request timed out");
+            setLoadingState(false);
+            scrapeButton.disabled = false;
+        }, 30000);
+        
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             // Send the scrape request.
             chrome.tabs.sendMessage(tabs[0].id, { action: "scrapeProfile" }, (resp) => {
@@ -33,19 +43,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 function processScrapedData(info) {
+    // Clear the timeout since a response has been received.
+    if (scrapeTimeout) {
+        clearTimeout(scrapeTimeout);
+        scrapeTimeout = null;
+    }
+    
     // For example, send the data to your background or prompt logic.
     chrome.runtime.sendMessage({ type: 'SEND_PROMPT', resp: info }, (response) => {
         scrapeButton.disabled = false;
         if (response.error) {
             setLoadingState(false);
-            responseDiv.innerText = `Error: ${response.error}`;
+            updateResponseDiv(`Error: ${response.error}`);
         } else {
             latestResponse = response.result;
             setLoadingState(false);
             navigator.clipboard.writeText(response.result).then(() => {
-                updateButtonText(btnTxtSuccess)
+                updateButtonText(btnTxtSuccess);
             }).catch(err => {
-                console.error('Could not copy text: ', err);
+                updateResponseDiv(`Could not copy text: ${err}`);
             });
         }
     });
@@ -108,6 +124,9 @@ function setLoadingState(on = true) {
 
 document.getElementById('copy').addEventListener('click', () => {
     try {
+        if (latestResponse == "") {
+            throw new Error("Latest response cache is empty");
+        }
         navigator.clipboard.writeText(latestResponse).then(() => {
 
             updateButtonText(btnTxtSuccess)
