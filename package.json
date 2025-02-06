@@ -1,0 +1,34 @@
+{
+  "name": "amrop-extension",
+  "version": "1.0.0",
+  "description": "![icon](./assets/icon128.png)",
+  "type": "module",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test:ui": "playwright test",
+    "test:scraper": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "npm run test:scraper && npm run test:ui"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/e2e/"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magnus188/amrop-extension.git"
+  },
+  "author": "Magnus Trandokken",
+  "bugs": {
+    "url": "https://github.com/magnus188/amrop-extension/issues"
+  },
+  "homepage": "https://github.com/magnus188/amrop-extension#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "jest": "^29.7.0",
+    "jsdom": "^26.0.0"
+  }
+}
