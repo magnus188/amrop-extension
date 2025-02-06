@@ -5,8 +5,7 @@
     "manifest_version": 3,
     "permissions": [
         "storage",
-        "activeTab",
-        "webNavigation"
+        "activeTab"
     ],
     "background": {
         "service_worker": "scripts/service-worker.js"

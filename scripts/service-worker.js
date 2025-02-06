@@ -1,21 +1,5 @@
 // service-worker.js
 
-// Inject content.js on navigation
-chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-    // Check that the URL is a LinkedIn profile URL.
-    if (details.url && details.url.match(/https:\/\/www\.linkedin\.com\/in\//)) {
-        chrome.scripting.executeScript({
-            target: { tabId: details.tabId },
-            files: ['scripts/content.js']
-        }, () => {
-            if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError.message);
-            } else {
-                console.log("Content script re-injected on SPA navigation.");
-            }
-        });
-    }
-});
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

@@ -1,10 +1,12 @@
 let latestResponse = "";
 
-let scrapeButton = document.getElementById('scrapeButton');
-let responseDiv = document.getElementById('response');
+const scrapeButton = document.getElementById('scrapeButton');
+const responseDiv = document.getElementById('response');
+const buttonIcon = document.getElementById('buttonIcon');
+const buttonText = document.getElementById('buttonText');
 
-let originalBtnText = "Genererate"
-let btnTxtSuccess = "Copied!"
+const originalBtnText = "Genererate"
+const btnTxtSuccess = "Copied!"
 
 let scrapeTimeout;
 
@@ -69,9 +71,13 @@ function processScrapedData(info) {
 
 
 function updateButtonText(text) {
-    scrapeButton.textContent = text;
+    buttonIcon.style.visibility = "hidden";
+    buttonText.display = "block";
+    buttonText.textContent = text;
     setTimeout(() => {
-        scrapeButton.textContent = originalBtnText;
+        // scrapeButton.textContent = originalBtnText;
+        buttonText.textContent = "";
+        buttonIcon.style.visibility = "initial";
     }, 2000);
 }
 
@@ -114,6 +120,7 @@ function isValidUrl(callback) {
 
 function setLoadingState(on = true) {
     if (on) {
+        buttonIcon.style.visibility = "hidden";
         scrapeButton.classList.add('loading');
     }
     else {
