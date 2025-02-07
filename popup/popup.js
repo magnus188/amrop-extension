@@ -29,6 +29,16 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             // Send the scrape request.
             chrome.tabs.sendMessage(tabs[0].id, { action: "scrapeProfile" }, (resp) => {
+                if (chrome.runtime.lastError) {
+                    console.log(chrome.runtime.lastError.message);
+                    updateResponseDiv(`Something went wrong. Please refresh window and try again.`);
+                    setLoadingState(false);
+                    setIcon(true);
+
+
+                    scrapeButton.disabled = false;
+                    return;
+                }
                 if (resp && resp.experiences) {
                     processScrapedData(resp);
                 }
@@ -36,6 +46,11 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
         });
     });
 });
+
+function setIcon(visible=true) {
+    buttonIcon.style.display = visible ? "block" : "none";
+    
+}
 
 // Listen for the SCRAPE_COMPLETE message sent from the full-page content script.
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -63,7 +78,7 @@ function processScrapedData(info) {
             navigator.clipboard.writeText(response.result).then(() => {
                 updateButtonText(btnTxtSuccess);
             }).catch(err => {
-                buttonIcon.style.visibility = "initial";
+                setIcon(true);
 
                 if (err.message.includes("Document is not focused")) {
                     updateResponseDiv("Copy to clipboard failed. Browser needs to be in focus. Please try again.", 7000);
@@ -77,15 +92,16 @@ function processScrapedData(info) {
 }
 
 
-function updateButtonText(text) {
-    buttonIcon.style.visibility = "hidden";
+function updateButtonText(text, timeout=3000) {
+    setIcon(false);
     buttonText.display = "block";
     buttonText.textContent = text;
     setTimeout(() => {
         // scrapeButton.textContent = originalBtnText;
         buttonText.textContent = "";
-        buttonIcon.style.visibility = "initial";
-    }, 2000);
+        setIcon(true);
+
+    }, timeout);
 }
 
 
@@ -127,7 +143,7 @@ function isValidUrl(callback) {
 
 function setLoadingState(on = true) {
     if (on) {
-        buttonIcon.style.visibility = "hidden";
+        setIcon(false);
         scrapeButton.classList.add('loading');
     }
     else {
