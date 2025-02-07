@@ -34,7 +34,7 @@ jobs:
             -x ".git*" \
             -x ".github*" \
             -x "docs/" \
-            -x "docs/*" 
+            -x "docs/*" \
             -x "tests/" \
             -x "tests/*" \
             -x "package.json" \
