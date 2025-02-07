@@ -18,14 +18,14 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
             return;
         }
         scrapeButton.disabled = true;
-        
+
         // Set a 30 second timeout to handle slow responses.
         scrapeTimeout = setTimeout(() => {
             updateResponseDiv("Error: Request timed out");
             setLoadingState(false);
             scrapeButton.disabled = false;
         }, 30000);
-        
+
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             // Send the scrape request.
             chrome.tabs.sendMessage(tabs[0].id, { action: "scrapeProfile" }, (resp) => {
@@ -50,7 +50,7 @@ function processScrapedData(info) {
         clearTimeout(scrapeTimeout);
         scrapeTimeout = null;
     }
-    
+
     // For example, send the data to your background or prompt logic.
     chrome.runtime.sendMessage({ type: 'SEND_PROMPT', resp: info }, (response) => {
         scrapeButton.disabled = false;
@@ -63,8 +63,15 @@ function processScrapedData(info) {
             navigator.clipboard.writeText(response.result).then(() => {
                 updateButtonText(btnTxtSuccess);
             }).catch(err => {
-                updateResponseDiv(`Could not copy text: ${err}`);
+                buttonIcon.style.visibility = "initial";
+
+                if (err.message.includes("Document is not focused")) {
+                    updateResponseDiv("Copy to clipboard failed. Browser needs to be in focus. Please try again.", 7000);
+                } else {
+                    updateResponseDiv(`Could not copy text: ${err.message}`);
+                }
             });
+            
         }
     });
 }
@@ -82,14 +89,14 @@ function updateButtonText(text) {
 }
 
 
-function updateResponseDiv(content) {
+function updateResponseDiv(content, timeout = 5000) {
     responseDiv.style.display = "block";
     responseDiv.textContent = content;
 
     setTimeout(() => {
         responseDiv.style.display = "none";
         responseDiv.textContent = "";
-    }, 5000);
+    }, timeout);
 }
 
 function isValidUrl(callback) {
@@ -130,19 +137,19 @@ function setLoadingState(on = true) {
 
 
 document.getElementById('copy').addEventListener('click', () => {
-    try {
-        if (latestResponse == "") {
-            throw new Error("Latest response cache is empty");
-        }
-        navigator.clipboard.writeText(latestResponse).then(() => {
-
-            updateButtonText(btnTxtSuccess)
-        })
-
-    } catch (e) {
-        updateResponseDiv(e.message)
+    if (latestResponse == "") {
+        updateResponseDiv("Latest response cache is empty");
+        return;
     }
-
+    navigator.clipboard.writeText(latestResponse).then(() => {
+        updateButtonText(btnTxtSuccess);
+    }).catch(err => {
+        if (err.message.includes("Document is not focused")) {
+            updateResponseDiv("Copy to clipboard failed. Browser needs to be in focus. Please try again.");
+        } else {
+            updateResponseDiv(`Could not copy text: ${err.message}`);
+        }
+    });
 });
 
 document.getElementById('settings').addEventListener('click', () => {
