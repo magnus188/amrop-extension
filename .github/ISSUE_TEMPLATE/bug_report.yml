@@ -1,0 +1,65 @@
+name: Bug Report
+description: File a bug report.
+title: "[Bug]: "
+labels: ["bug"]
+assignees:
+  - magnus188
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        
+        Please make sure your issue has not already been reported. Provide as much detail as possible to help debugging.
+        
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of the extension are you running?
+      options:
+        - "Latest Release" # This will be dynamically updated via GitHub Actions
+        - "Previous Versions" # You can replace this with a workflow that fetches releases
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide a clear list of steps to reproduce the issue.
+      placeholder: |
+        1. Open the application
+        2. Click on 'X' button
+        3. Notice the error...
+      render: shell
+    validations:
+      required: true
+
+  - type: file
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Upload a screenshot of the issue if applicable.
+      multiple: false
+      accept:
+        - image/png
+        - image/jpeg
+        - image/gif
+        
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information about the problem.
