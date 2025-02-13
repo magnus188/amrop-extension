@@ -10,7 +10,7 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report!
         
-        Please make sure your issue has not already been reported. Provide as much detail as possible to help debugging.
+        Please make sure your issue has not already been reported. Provide as much detail as possible to help with debugging.
         
   - type: dropdown
     id: version
@@ -47,17 +47,12 @@ body:
     validations:
       required: true
 
-  - type: file
-    id: screenshot
+  - type: markdown
     attributes:
-      label: Screenshot
-      description: Upload a screenshot of the issue if applicable.
-      multiple: false
-      accept:
-        - image/png
-        - image/jpeg
-        - image/gif
-        
+      value: |
+        **Screenshot (optional):**  
+        If applicable, please attach a screenshot by dragging and dropping it into the issue comment after submission.
+  
   - type: textarea
     id: additional-context
     attributes:
