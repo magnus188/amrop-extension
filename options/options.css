@@ -19,7 +19,7 @@
 
  .settings-container {
      max-width: 60%;
-     margin: 40px auto;
+     margin: 30px auto;
      background: #fff;
      border-radius: 8px;
      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -32,10 +32,11 @@
      color: #202124;
  }
 
- label, a {
-    font-size: 14px;
+ label,
+ a {
+     font-size: 14px;
  }
- 
+
 
  .form-group {
      margin: 15px 0;
@@ -174,6 +175,37 @@
      -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
      animation: fadein 0.5s, fadeout 0.5s 2.5s;
  }
+
+/* Styling for the report issues section */
+.report-issues-container {
+    margin: 0px auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+
+.report-issues-container p {
+    margin: 0 0 20px;
+    font-size: 16px;
+    color: #333;
+}
+
+.report-link {
+    font-size: 16px;
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+    padding: 10px 20px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.report-link:hover {
+    background-color: #007bff;
+    color: #fff;
+}
 
  /* Animations to fade the snackbar in and out */
  @-webkit-keyframes fadein {

@@ -1,117 +1,134 @@
  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
-body {
-    font-family: 'Roboto', sans-serif;
-    width: 200px;
-    padding: 10px;
-}
+ body {
+     font-family: 'Roboto', sans-serif;
+     width: 200px;
+     padding: 10px;
+     padding-bottom: 0;
+ }
 
-nav {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 5%;
-    padding-top: 0;
-}
+ a {
+     font-size: 14px;
+     color: #BDBDBD;
+     text-decoration: none;
+     transition: 0.2s all;
+     text-align: center;
+     display: block;
+     margin-top: 20px;
+     margin-bottom: 10px;
+ }
 
-#copy {
-    font-weight: 800;
-}
+ a:hover {
+     text-decoration: underline;
+     color: #E0E0E0;
+ }
 
-button,
-.material-icons {
-    cursor: pointer;
-    transition: 0.2s all;
-    outline: 0;
-}
+ nav {
+     display: flex;
+     flex-direction: row;
+     justify-content: space-between;
+     padding: 5%;
+     padding-top: 0;
+ }
 
-.material-icons {
-    color: rgba(0, 0, 0, 0.56);
-}
+ #copy {
+     font-weight: 800;
+ }
 
-button {
-    height: 40px;
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background-color: #4285f4;
-    border: none;
-    border-radius: 4px;
-    color: #FFF;
-    font-size: 16px;
-    transition: opacity 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
+ button,
+ .material-icons {
+     cursor: pointer;
+     transition: 0.2s all;
+     outline: 0;
+ }
 
-button:hover,
-.material-icons:hover {
-    opacity: 0.7;
-}
+ .material-icons {
+     color: rgba(0, 0, 0, 0.56);
+ }
 
-/* Loader Styles */
-.loader,
-.loader:before,
-.loader:after {
-    border-radius: 50%;
-    width: 2.5em;
-    height: 2.5em;
-    animation-fill-mode: both;
-    animation: bblFadInOut 1.8s infinite ease-in-out;
-}
+ button {
+     height: 40px;
+     width: 100%;
+     padding: 10px;
+     margin: 10px 0;
+     background-color: #4285f4;
+     border: none;
+     border-radius: 4px;
+     color: #FFF;
+     font-size: 16px;
+     transition: opacity 0.3s ease;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     position: relative;
+ }
 
-.loader {
-    color: #FFF;
-    font-size: 4px;
-    text-indent: -9999em;
-    transform: translateZ(0);
-    animation-delay: -0.16s;
-    opacity: 0;
-    transition: 0.2s opacity;
+ button:hover,
+ .material-icons:hover {
+     opacity: 0.7;
+ }
 
-    position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
+ /* Loader Styles */
+ .loader,
+ .loader:before,
+ .loader:after {
+     border-radius: 50%;
+     width: 2.5em;
+     height: 2.5em;
+     animation-fill-mode: both;
+     animation: bblFadInOut 1.8s infinite ease-in-out;
+ }
 
-.loader:before,
-.loader:after {
-    content: '';
-    position: absolute;
-    top: 0;
-}
+ .loader {
+     color: #FFF;
+     font-size: 4px;
+     text-indent: -9999em;
+     transform: translateZ(0);
+     animation-delay: -0.16s;
+     opacity: 0;
+     transition: 0.2s opacity;
 
-.loader:before {
-    left: -3.5em;
-    animation-delay: -0.32s;
-}
+     position: absolute;
+     top: 30%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+ }
 
-.loader:after {
-    left: 3.5em;
-}
+ .loader:before,
+ .loader:after {
+     content: '';
+     position: absolute;
+     top: 0;
+ }
 
-@keyframes bblFadInOut {
+ .loader:before {
+     left: -3.5em;
+     animation-delay: -0.32s;
+ }
 
-    0%,
-    80%,
-    100% {
-        box-shadow: 0 2.5em 0 -1.3em
-    }
+ .loader:after {
+     left: 3.5em;
+ }
 
-    40% {
-        box-shadow: 0 2.5em 0 0
-    }
-}
+ @keyframes bblFadInOut {
 
-/* Loading State */
-#scrapeButton.loading {
-    color: transparent;
-    pointer-events: none;
-}
+     0%,
+     80%,
+     100% {
+         box-shadow: 0 2.5em 0 -1.3em
+     }
 
-#scrapeButton.loading .loader {
-    opacity: 1;
-}
+     40% {
+         box-shadow: 0 2.5em 0 0
+     }
+ }
+
+ /* Loading State */
+ #scrapeButton.loading {
+     color: transparent;
+     pointer-events: none;
+ }
+
+ #scrapeButton.loading .loader {
+     opacity: 1;
+ }
