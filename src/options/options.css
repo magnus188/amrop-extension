@@ -23,6 +23,13 @@
     --error-dark: #b00202;
 }
 
+.version-container {
+    text-align: center;
+    color: #555;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
 /* Google-inspired font (Roboto) and layout */
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
@@ -275,10 +282,15 @@ textarea {
     text-align: center;
     background-color: #f8f9fa;
     border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .report-issues-container p {
-    margin: 0 0 20px;
+    margin: 0;
     font-size: 16px;
     color: var(--text-primary);
 }

@@ -96,6 +96,18 @@ McKinsey & Company – Global consultancy firm specializing in strategy and lead
 };
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    const versionSpan = document.getElementById('ext-version');
+
+    if (versionSpan) {
+        // Fetch the version from manifest.json at runtime
+        const version = chrome.runtime.getManifest().version;
+
+        // Update the <span> text
+        versionSpan.textContent = version;
+    }
+
+
     const modal = document.getElementById("newPromptModal");
 
     document.getElementById("addPromptButton").addEventListener("click", function () {
