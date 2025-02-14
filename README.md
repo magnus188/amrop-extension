@@ -1,5 +1,5 @@
 # Documentation Amrop listeprepp generator 
-![icon](./assets/icon128.png)
+![icon](./src/assets/icon128.png)
 
 ## Table of Contents
 - [Installation](#installation)
