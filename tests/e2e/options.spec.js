@@ -43,6 +43,22 @@ test.describe('Options UI tests', () => {
                     },
                 };
             }
+
+            if (!window.chrome.runtime) {
+                window.chrome.runtime = {};
+            }
+
+            // Mock getManifest to avoid a crash when main.js calls chrome.runtime.getManifest().version
+            if (!window.chrome.runtime.getManifest) {
+                window.chrome.runtime.getManifest = () => ({ version: '1.0.0-test' });
+            }
+
+            Object.defineProperty(window.chrome.runtime, 'lastError', {
+                get() {
+                    // Return null to indicate no error
+                    return null;
+                }
+            });
         });
 
         await page.goto(`file://${optionsPath}`);
@@ -104,10 +120,15 @@ test.describe('Options UI tests', () => {
                 };
             }
 
-            // Mock chrome.runtime and its lastError
             if (!window.chrome.runtime) {
                 window.chrome.runtime = {};
             }
+
+            // Mock getManifest to avoid a crash when main.js calls chrome.runtime.getManifest().version
+            if (!window.chrome.runtime.getManifest) {
+                window.chrome.runtime.getManifest = () => ({ version: '1.0.0-test' });
+            }
+
             Object.defineProperty(window.chrome.runtime, 'lastError', {
                 get() {
                     // Return null to indicate no error
