@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Check out code
+      # 1) Checkout code
       - name: Check out repository
         uses: actions/checkout@v3
 
@@ -30,81 +30,50 @@ jobs:
       - name: Bump version with standard-version
         run: |
           npx standard-version --ci
-          # This creates a new tag (e.g., v1.3.0). Let's push that tag.
           git push --follow-tags origin main
 
       # 3) Update src/manifest.json's version from package.json
       - name: Sync version into manifest.json
         run: npm run build
 
-      # 4) Get new version (from package.json) and old version (from previous tag)
-      - name: Get versions
-        id: versions
+      # 4) Extract final version from package.json
+      - name: Extract version from package.json
+        id: extension_version
         run: |
-          # new version from package.json
-          NEW_VERSION=$(jq -r '.version' package.json)
-          
-          # old version from last tag (fall back to 0.0.0 if no tag found)
-          OLD_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          # remove leading "v" if present
-          OLD_VERSION=${OLD_TAG#v}
+          EXT_VERSION=$(jq -r '.version' package.json)
+          echo "EXT_VERSION=$EXT_VERSION" >> $GITHUB_ENV
 
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_ENV
-
-      # 5) Compare "minor" digit. If it changed, then we release. Otherwise, we skip.
-      - name: Check if release is needed (minor digit changed?)
-        id: check_release
-        run: |
-          # Extract the minor digit: x.MINOR.z
-          new_minor=$(echo "${NEW_VERSION}" | cut -d '.' -f2)
-          old_minor=$(echo "${OLD_VERSION}" | cut -d '.' -f2)
-
-          echo "new_minor=$new_minor"
-          echo "old_minor=$old_minor"
-
-          if [ "$new_minor" != "$old_minor" ]; then
-            echo "release_needed=true" >> $GITHUB_OUTPUT
-          else
-            echo "release_needed=false" >> $GITHUB_OUTPUT
-          fi
-
-      # 6) Zip ONLY the src folder, but only if release_needed == true
+      # 5) Zip ONLY the src folder (simplified)
       - name: Zip the src folder
-        if: steps.check_release.outputs.release_needed == 'true'
         run: |
-          zip -r "amrop-extension-v${{ env.NEW_VERSION }}.zip" src
+          zip -r "amrop-extension.zip" src
 
-      # 7) Create GitHub Release (only if needed)
+      # 6) Create GitHub Release (still auto-generates entire-source downloads)
       - name: Create GitHub Release
         id: create_release
-        if: steps.check_release.outputs.release_needed == 'true'
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ env.NEW_VERSION }}"
-          release_name: "v${{ env.NEW_VERSION }}"
+          tag_name: "v${{ env.EXT_VERSION }}"
+          release_name: "v${{ env.EXT_VERSION }}"
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 8) Upload our custom zip to the release, naming it "DOWNLOAD-ME.zip" (only if needed)
+      # 7) Upload our custom zip to the release, naming it "DOWNLOAD-ME.zip"
       - name: Upload "DOWNLOAD-ME.zip" to Release
-        if: steps.check_release.outputs.release_needed == 'true'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: "./amrop-extension-v${{ env.NEW_VERSION }}.zip"
+          asset_path: "./amrop-extension.zip"
           asset_name: "DOWNLOAD-ME.zip"
           asset_content_type: "application/zip"
 
-      # 9) (Optional) Publish to the Chrome Web Store
-      #    Only runs if a new release was created
+      # 8) Publish to the Chrome Web Store
       # - name: Publish to Chrome Web Store
-      #   if: steps.check_release.outputs.release_needed == 'true'
       #   uses: mnao305/chrome-extension-upload@v5.0.0
       #   with:
-      #     file-path: "./amrop-extension-v${{ env.NEW_VERSION }}.zip"
+      #     file-path: './amrop-extension.zip'
       #     extension-id: ${{ secrets.EXTENSION_ID }}
       #     client-id: ${{ secrets.CLIENT_ID }}
       #     client-secret: ${{ secrets.CLIENT_SECRET }}
