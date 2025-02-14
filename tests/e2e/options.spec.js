@@ -89,66 +89,6 @@ test.describe('Options UI tests', () => {
 
     });
 
-    // test('should restore default prompt on button click', async ({ page }) => {
-    //     await page.addInitScript(() => {
-    //         // Only define chrome if not already defined
-    //         if (!window.chrome) window.chrome = {};
-
-    //         // Mock chrome.storage (as you already do)
-    //         if (!window.chrome.storage) {
-    //             window.chrome.storage = {};
-    //         }
-    //         if (!window.chrome.storage.sync) {
-    //             window.chrome.storage.sync = {
-    //                 get(keys, callback) {
-    //                     callback && callback({});
-    //                 },
-    //                 set(items, callback) {
-    //                     callback && callback();
-    //                 },
-    //             };
-    //         }
-
-    //         // Mock chrome.runtime and its lastError
-    //         if (!window.chrome.runtime) {
-    //             window.chrome.runtime = {};
-    //         }
-    //         Object.defineProperty(window.chrome.runtime, 'lastError', {
-    //             get() {
-    //                 // Return null to indicate no error
-    //                 return null;
-    //             }
-    //         });
-    //     });
-
-    //     await page.goto(`file://${optionsPath}`);
-
-    //     await page.pause()
-
-    //     // Switch to Prompt 2 (example)
-    //     const prompt2Button = page.locator('.prompt-tab').nth(1);
-    //     await prompt2Button.click();
-
-    //     // Get the default value from the text area (using inputValue() for input/textarea elements)
-    //     const promptTextarea = page.locator('#systemPromptText');
-    //     const defaultValue = await promptTextarea.inputValue();
-
-    //     // Edit the text area
-    //     await promptTextarea.fill('A custom user prompt');
-
-    //     // Click "Restore Default Prompt"
-    //     const restoreButton = page.locator('#restoreDefaultPrompt');
-    //     await restoreButton.click();
-
-
-    //     const valueNow = await promptTextarea.inputValue();
-
-    //     await page.pause()
-
-    //     // Expect the text area to revert to the default text
-    //     await expect(promptTextarea).toHaveValue(defaultValue);
-    // });
-
 
     test('should show snackbar after clicking Save', async ({ page }) => {
 
