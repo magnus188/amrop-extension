@@ -41,15 +41,7 @@ jobs:
       # 5) Zip the extension from src/ directory
       - name: Zip the extension
         run: |
-          zip -r amrop-extension.zip src \
-            -x "src/.git*" \
-            -x "src/.github*" \
-            -x "src/tests*" \
-            -x "src/docs*" \
-            -x "**/node_modules/*" \
-            -x ".gitignore" \
-            -x "package-lock.json" \
-            -x "package.json"
+          zip -r amrop-extension.zip src
 
       # 6) Create GitHub Release with zip
       - name: Create GitHub Release
