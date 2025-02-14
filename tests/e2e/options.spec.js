@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const optionsPath = path.resolve(__dirname, '../../options/options.html');
+const optionsPath = path.resolve(__dirname, '../../src/options/options.html');
 
 test.describe('Options UI tests', () => {
 
