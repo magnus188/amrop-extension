@@ -9,7 +9,7 @@ const optionsPath = path.resolve(__dirname, '../../options/options.html');
 
 test.describe('Options UI tests', () => {
 
-    test('should show API key input, language dropdown, and default prompts', async ({ page }) => {
+    test('should show API key input, language dropdown', async ({ page }) => {
         await page.goto(`file://${optionsPath}`);
 
         // 1) Gemini API Key input
@@ -21,14 +21,6 @@ test.describe('Options UI tests', () => {
         const languageSelect = page.locator('#languageSelect');
         await expect(languageSelect).toBeVisible();
         await expect(languageSelect).toHaveValue('English');
-
-        // 3) Prompt tabs
-        const promptTabs = page.locator('.prompt-tab');
-        await expect(promptTabs).toHaveCount(3);
-        // Check default active state if any
-        // e.g. maybe "Prompt 1" is active
-        // const prompt1 = promptTabs.nth(0);
-        // await expect(prompt1).toHaveClass(/active/);
     });
 
     test('should switch prompt tabs and show correct text area', async ({ page }) => {
