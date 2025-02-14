@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Extension Settings</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="options.css">
+    <link rel="stylesheet" href="modal.css">
+</head>
+
+<body>
+    <div class="report-issues-container" id="reportHeader">
+        <p>Found a bug or have a feature request?</p>
+        <a href="https://github.com/magnus188/amrop-extension/issues" target="_blank" class="report-link">
+            Report it on GitHub
+        </a>
+        <div class="version-container">
+            <p>Extension version: <span id="ext-version"></span></p>
+        </div>
+    </div>
+
+  
+
+    <div class="settings-container">
+        <h2>Settings</h2>
+
+        <!-- Gemini API Key input -->
+        <div class="form-group">
+            <label for="apiKey">Gemini API Key</label>
+            <input type="text" id="apiKey" class="form-control" placeholder="Enter your Gemini API Key" />
+        </div>
+
+        <!-- Link for Gemini API Key info -->
+        <div class="form-group">
+            <label>Need a Gemini API Key?</label>
+            <a href="https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw.."
+                target="_blank">
+                Click here to get one for free
+            </a>
+        </div>
+
+        <!-- System Prompt Tabs Section -->
+        <div class="tabs-wrapper">
+            <div class="prompt-tabs">
+                <!-- Dynamic prompt tabs get inserted here -->
+            </div>
+            <button id="addPromptButton" type="button">Add Prompt</button>
+        </div>
+
+        <!-- Language Select for the active prompt -->
+        <div class="form-group">
+            <label for="languageSelect">Language</label>
+            <select id="languageSelect" class="form-control">
+                <option value="English">English</option>
+                <option value="Norwegian">Norwegian</option>
+                <option value="Finnish">Finnish</option>
+            </select>
+        </div>
+
+        <!-- Prompt Text Area and Restore Button -->
+        <div class="form-group">
+            <textarea id="systemPromptText" class="form-control" rows="5" placeholder="Enter your prompt..."></textarea>
+            <button id="restoreDefaultPrompt" class="restore-button" type="button">Restore Default Prompt</button>
+        </div>
+
+        <div class="button-row">
+            <button id="save" class="save-button" disabled>Save</button>
+            <button id="resetAll" class="reset-button" type="button">Reset Settings</button>
+        </div>
+    </div>
+
+    <!-- New Prompt Modal -->
+    <div id="newPromptModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Add New Prompt</h2>
+            <form id="newPromptForm">
+                <div class="form-group">
+                    <label for="promptName">Prompt Name</label>
+                    <input type="text" id="promptName" class="form-control" placeholder="Enter prompt name" required>
+                </div>
+                <div class="form-group">
+                    <label for="promptLanguage">Language</label>
+                    <select id="promptLanguage" class="form-control" required>
+                        <option value="English">English</option>
+                        <option value="Norwegian">Norwegian</option>
+                        <option value="Finnish">Finnish</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="promptText">Prompt Text</label>
+                    <textarea id="promptText" class="form-control" rows="4" placeholder="Enter prompt text"
+                        required></textarea>
+                </div>
+                <button type="submit" class="save-button">Add Prompt</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="snackbar"></div>
+
+    <script src="modal.js"></script>
+    <script src="options.js"></script>
+</body>
+
+</html>

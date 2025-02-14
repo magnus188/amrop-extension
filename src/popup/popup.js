@@ -71,7 +71,12 @@ function processScrapedData(info) {
         scrapeButton.disabled = false;
         if (response.error) {
             setLoadingState(false);
-            updateResponseDiv(`Error: ${response.error}`);
+
+            if (response.error.includes("resource has been exhausted")) {
+                updateResponseDiv("Error: You have exceeded your quota or rate limit for the Gemini API.\nRemember: 15 request per minute for free tier!.");
+            } else {
+                updateResponseDiv(`Error: ${response.error}`);
+            }
         } else {
             latestResponse = response.result;
             setLoadingState(false);
@@ -79,14 +84,12 @@ function processScrapedData(info) {
                 updateButtonText(btnTxtSuccess);
             }).catch(err => {
                 setIcon(true);
-
                 if (err.message.includes("Document is not focused")) {
                     updateResponseDiv("Copy to clipboard failed. Browser needs to be in focus. Please try again.", 7000);
                 } else {
                     updateResponseDiv(`Could not copy text: ${err.message}`);
                 }
             });
-            
         }
     });
 }

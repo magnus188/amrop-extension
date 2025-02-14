@@ -2,12 +2,11 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
 
 // We create a file:// URL to load the popup directly from disk
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const popupPath = path.resolve(__dirname, '../../popup/popup.html');
+const popupPath = path.resolve(__dirname, '../../src/popup/popup.html');
 // On Windows you'll need to ensure correct file:// path format
 // But this should generally work in Node contexts
 

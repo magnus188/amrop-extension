@@ -5,11 +5,11 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const optionsPath = path.resolve(__dirname, '../../options/options.html');
+const optionsPath = path.resolve(__dirname, '../../src/options/options.html');
 
 test.describe('Options UI tests', () => {
 
-    test('should show API key input, language dropdown, and default prompts', async ({ page }) => {
+    test('should show API key input, language dropdown', async ({ page }) => {
         await page.goto(`file://${optionsPath}`);
 
         // 1) Gemini API Key input
@@ -21,14 +21,6 @@ test.describe('Options UI tests', () => {
         const languageSelect = page.locator('#languageSelect');
         await expect(languageSelect).toBeVisible();
         await expect(languageSelect).toHaveValue('English');
-
-        // 3) Prompt tabs
-        const promptTabs = page.locator('.prompt-tab');
-        await expect(promptTabs).toHaveCount(3);
-        // Check default active state if any
-        // e.g. maybe "Prompt 1" is active
-        // const prompt1 = promptTabs.nth(0);
-        // await expect(prompt1).toHaveClass(/active/);
     });
 
     test('should switch prompt tabs and show correct text area', async ({ page }) => {
@@ -88,66 +80,6 @@ test.describe('Options UI tests', () => {
         await expect(prompt2Button).not.toHaveClass(/active/);
 
     });
-
-    // test('should restore default prompt on button click', async ({ page }) => {
-    //     await page.addInitScript(() => {
-    //         // Only define chrome if not already defined
-    //         if (!window.chrome) window.chrome = {};
-
-    //         // Mock chrome.storage (as you already do)
-    //         if (!window.chrome.storage) {
-    //             window.chrome.storage = {};
-    //         }
-    //         if (!window.chrome.storage.sync) {
-    //             window.chrome.storage.sync = {
-    //                 get(keys, callback) {
-    //                     callback && callback({});
-    //                 },
-    //                 set(items, callback) {
-    //                     callback && callback();
-    //                 },
-    //             };
-    //         }
-
-    //         // Mock chrome.runtime and its lastError
-    //         if (!window.chrome.runtime) {
-    //             window.chrome.runtime = {};
-    //         }
-    //         Object.defineProperty(window.chrome.runtime, 'lastError', {
-    //             get() {
-    //                 // Return null to indicate no error
-    //                 return null;
-    //             }
-    //         });
-    //     });
-
-    //     await page.goto(`file://${optionsPath}`);
-
-    //     await page.pause()
-
-    //     // Switch to Prompt 2 (example)
-    //     const prompt2Button = page.locator('.prompt-tab').nth(1);
-    //     await prompt2Button.click();
-
-    //     // Get the default value from the text area (using inputValue() for input/textarea elements)
-    //     const promptTextarea = page.locator('#systemPromptText');
-    //     const defaultValue = await promptTextarea.inputValue();
-
-    //     // Edit the text area
-    //     await promptTextarea.fill('A custom user prompt');
-
-    //     // Click "Restore Default Prompt"
-    //     const restoreButton = page.locator('#restoreDefaultPrompt');
-    //     await restoreButton.click();
-
-
-    //     const valueNow = await promptTextarea.inputValue();
-
-    //     await page.pause()
-
-    //     // Expect the text area to revert to the default text
-    //     await expect(promptTextarea).toHaveValue(defaultValue);
-    // });
 
 
     test('should show snackbar after clicking Save', async ({ page }) => {

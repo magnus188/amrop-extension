@@ -1,0 +1,361 @@
+:root {
+    /* Material Color Variables */
+    --primary: #4285f4;
+    --primary-dark: #3367d6;
+    --primary-light: #8ab4f8;
+
+    --secondary: #00bcd4;
+    --secondary-dark: #0097a7;
+    --secondary-light: #b2ebf2;
+
+    --background: #f1f3f4;
+    --surface: #ffffff;
+    --text-primary: #202124;
+    --border: #dadce0;
+
+    --link: #4285f4;
+    --restore: #e0e0e0;
+    --restore-hover: #cfcfcf;
+    --snackbar-bg: #333;
+
+    --error: #d1242f;
+    --error-light: #de8282;
+    --error-dark: #b00202;
+}
+
+.version-container {
+    text-align: center;
+    color: #555;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Google-inspired font (Roboto) and layout */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--background);
+}
+
+/* Reset and global styles */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.settings-container {
+    max-width: 60%;
+    margin: 30px auto;
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    padding: 20px;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 32px;
+    color: var(--text-primary);
+}
+
+label,
+a {
+    font-size: 14px;
+}
+
+.form-group {
+    margin: 15px 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+/* For the language dropdown */
+select.form-control {
+    cursor: pointer;
+}
+
+/* Link styling */
+a {
+    color: var(--link);
+    text-decoration: none;
+    transition: 0.2s all;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Save button */
+.save-button {
+    transition: 0.2s all;
+    background-color: #dadce0;
+    color: var(--surface);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: not-allowed;
+    transition: background-color 0.2s;
+}
+
+.save-button.active:hover {
+    background-color: var(--primary-light);
+}
+
+.save-button.active {
+    background-color: #4285f4;
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    height: 40vh;
+    min-height: 200px;
+}
+
+/* Restore button */
+.restore-button {
+    background-color: var(--restore);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.restore-button:hover {
+    background-color: var(--restore-hover);
+}
+
+.tabs-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.prompt-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px;
+    flex-grow: 1;
+    scrollbar-gutter: stable;
+}
+
+.prompt-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.prompt-tab {
+    padding: 8px 25px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    cursor: pointer;
+    border-radius: 4px;
+    position: relative;
+    white-space: nowrap;
+}
+
+.prompt-tab.active {
+    background-color: var(--secondary-dark);
+    color: var(--surface);
+}
+
+/* Hide the edit and delete icons by default */
+.edit-icon,
+.delete-icon {
+    font-size: 16px;
+    display: inline;
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: 0.2s opacity;
+}
+
+.edit-icon {
+    right: 5px;
+}
+
+.delete-icon {
+    left: 5px;
+}
+
+.prompt-tab:hover {
+    background-color: var(--secondary-light);
+}
+
+/* Show the icons on hover */
+.prompt-tab:hover .edit-icon,
+.prompt-tab:hover .delete-icon {
+    opacity: 1;
+}
+
+/* Style for the input that replaces the label */
+.prompt-edit-input {
+    width: 80%;
+    font-size: inherit;
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.reset-button {
+    background-color: var(--error-light);
+    border: none;
+    color: var(--surface);
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+}
+
+.reset-button:hover {
+    background-color: var(--error);
+}
+
+.reset-button:active {
+    background-color: var(--error-dark);
+    transform: scale(0.98);
+}
+
+/* SNACKBAR */
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: var(--snackbar-bg);
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Styling for the report issues section */
+.report-issues-container {
+    margin: 0px auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.report-issues-container p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.report-link {
+    font-size: 16px;
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+    padding: 10px 20px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background-color: var(--surface);
+}
+
+.report-link:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Animations for the snackbar */
+@-webkit-keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
