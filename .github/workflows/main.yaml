@@ -26,7 +26,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
       # 2) Automatically bump package.json version & create tag using standard-version
       - name: Bump version with standard-version
         run: |
@@ -47,7 +47,8 @@ jobs:
       # 5) Zip the extension from src/ directory
       - name: Zip the extension
         run: |
-          zip -r amrop-extension.zip src
+          cd src
+          zip -r ../amrop-extension.zip .
 
       # 6) Create GitHub Release with zip
       - name: Create GitHub Release
