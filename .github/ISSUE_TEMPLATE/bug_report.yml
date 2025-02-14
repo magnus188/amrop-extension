@@ -1,0 +1,54 @@
+name: Bug Report
+description: File a bug report.
+title: "[Bug]: "
+labels: ["bug"]
+assignees:
+  - magnus188
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        
+        Please make sure your issue has not already been reported. Provide as much detail as possible to help with debugging.
+        
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version
+      description: What version of the extension are you running?
+      options:
+        - "v1.1.0"
+        - "v1.0.0"
+        - "v0.9.5"
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see! Please inlude screenshots if possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide a clear list of steps to reproduce the issue.
+      placeholder: |
+        1. Open the application
+        2. Click on 'X' button
+        3. Notice the error...
+      render: shell
+    validations:
+      required: true
+  
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information about the problem.
