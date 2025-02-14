@@ -1,180 +1,272 @@
- /* Google-inspired font (Roboto) and layout */
- @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+:root {
+    /* Material Color Variables */
+    --primary: #4285f4;
+    --primary-dark: #3367d6;
+    --primary-light: #8ab4f8;
 
- body {
-     font-family: 'Roboto', sans-serif;
-     margin: 0;
-     padding: 0;
-     background: #f1f3f4;
-     /* Light Google gray background */
- }
+    --secondary: #00bcd4;
+    --secondary-dark: #0097a7;
+    --secondary-light: #b2ebf2;
 
- /* Reset and global styles */
- *,
- *::before,
- *::after {
-     box-sizing: border-box;
-     /* Include padding and border in element's total width and height */
- }
+    --background: #f1f3f4;
+    --surface: #ffffff;
+    --text-primary: #202124;
+    --border: #dadce0;
 
- .settings-container {
-     max-width: 60%;
-     margin: 30px auto;
-     background: #fff;
-     border-radius: 8px;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-     padding: 20px;
- }
+    --link: #4285f4;
+    --restore: #e0e0e0;
+    --restore-hover: #cfcfcf;
+    --snackbar-bg: #333;
 
- h2 {
-     margin-top: 0;
-     font-size: 32px;
-     color: #202124;
- }
+    --error: #d1242f;
+    --error-light: #de8282;
+    --error-dark: #b00202;
+}
 
- label,
- a {
-     font-size: 14px;
- }
+/* Google-inspired font (Roboto) and layout */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--background);
+}
 
- .form-group {
-     margin: 15px 0;
- }
+/* Reset and global styles */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
- .form-group label {
-     display: block;
-     margin-bottom: 5px;
-     color: #202124;
-     font-weight: 500;
- }
+.settings-container {
+    max-width: 60%;
+    margin: 30px auto;
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    padding: 20px;
+}
 
- .form-control {
-     width: 100%;
-     padding: 10px;
-     font-size: 14px;
-     border: 1px solid #dadce0;
-     border-radius: 4px;
- }
+h2 {
+    margin-top: 0;
+    font-size: 32px;
+    color: var(--text-primary);
+}
 
- .form-control:focus {
-     outline: none;
-     border-color: #4285f4;
-     box-shadow: 0 0 0 1px #4285f4;
- }
+label,
+a {
+    font-size: 14px;
+}
 
- /* For the language dropdown */
- select.form-control {
-     cursor: pointer;
- }
+.form-group {
+    margin: 15px 0;
+}
 
- /* Link styling */
- a {
-     color: #4285f4;
-     text-decoration: none;
-     transition: 0.2s all;
- }
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
 
- a:hover {
-     text-decoration: underline;
- }
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
 
- /* Save button */
- .save-button {
-     transition: 0.2s all;
-     background-color: #4285f4;
-     color: white;
-     padding: 10px 20px;
-     border: none;
-     border-radius: 4px;
-     font-size: 14px;
-     cursor: pointer;
- }
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+}
 
- .save-button:hover {
-     background-color: #3367d6;
- }
+/* For the language dropdown */
+select.form-control {
+    cursor: pointer;
+}
 
- textarea {
-     resize: vertical;
-     height: 40vh;
-     min-height: 200px;
- }
+/* Link styling */
+a {
+    color: var(--link);
+    text-decoration: none;
+    transition: 0.2s all;
+}
 
- /* Restore button */
- .restore-button {
-     background-color: #e0e0e0;
-     color: #202124;
-     padding: 8px 16px;
-     border: none;
-     border-radius: 4px;
-     font-size: 14px;
-     cursor: pointer;
-     margin-top: 5px;
-     transition: background-color 0.3s ease;
- }
+a:hover {
+    text-decoration: underline;
+}
 
- .restore-button:hover {
-     background-color: #cfcfcf;
- }
+/* Save button */
+.save-button {
+    transition: 0.2s all;
+    background-color: #dadce0;
+    color: var(--surface);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: not-allowed;
+    transition: background-color 0.2s;
+}
 
+.save-button.active:hover {
+    background-color: var(--primary-light);
+}
 
- /* Styles for the prompt tabs */
- .prompt-tabs {
-     display: flex;
-     gap: 10px;
-     margin-bottom: 10px;
- }
+.save-button.active {
+    background-color: #4285f4;
+    cursor: pointer;
+}
 
- .prompt-tab {
-     padding: 8px 16px;
-     border: 1px solid #dadce0;
-     background-color: #fff;
-     cursor: pointer;
-     border-radius: 4px;
- }
+textarea {
+    resize: vertical;
+    height: 40vh;
+    min-height: 200px;
+}
 
- .prompt-tab.active {
-     background-color: #4285f4;
-     color: #fff;
- }
+/* Restore button */
+.restore-button {
+    background-color: var(--restore);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: background-color 0.3s ease;
+}
 
+.restore-button:hover {
+    background-color: var(--restore-hover);
+}
 
- /* SNACKBAR */
+.tabs-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
 
- #snackbar {
-     visibility: hidden;
-     /* Hidden by default. Visible on click */
-     min-width: 250px;
-     /* Set a default minimum width */
-     margin-left: -125px;
-     /* Divide value of min-width by 2 */
-     background-color: #333;
-     /* Black background color */
-     color: #fff;
-     /* White text color */
-     text-align: center;
-     /* Centered text */
-     border-radius: 2px;
-     /* Rounded borders */
-     padding: 16px;
-     /* Padding */
-     position: fixed;
-     /* Sit on top of the screen */
-     z-index: 1;
-     /* Add a z-index if needed */
-     left: 50%;
-     /* Center the snackbar */
-     bottom: 30px;
-     /* 30px from the bottom */
- }
+.prompt-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px;
+    flex-grow: 1;
+    scrollbar-gutter: stable;
+}
 
- /* Show the snackbar when clicking on a button (class added with JavaScript) */
- #snackbar.show {
-     visibility: visible;
-     -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-     animation: fadein 0.5s, fadeout 0.5s 2.5s;
- }
+.prompt-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.prompt-tab {
+    padding: 8px 25px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    cursor: pointer;
+    border-radius: 4px;
+    position: relative;
+    white-space: nowrap;
+}
+
+.prompt-tab.active {
+    background-color: var(--secondary-dark);
+    color: var(--surface);
+}
+
+/* Hide the edit and delete icons by default */
+.edit-icon,
+.delete-icon {
+    font-size: 16px;
+    display: inline;
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: 0.2s opacity;
+}
+
+.edit-icon {
+    right: 5px;
+}
+
+.delete-icon {
+    left: 5px;
+}
+
+.prompt-tab:hover {
+    background-color: var(--secondary-light);
+}
+
+/* Show the icons on hover */
+.prompt-tab:hover .edit-icon,
+.prompt-tab:hover .delete-icon {
+    opacity: 1;
+}
+
+/* Style for the input that replaces the label */
+.prompt-edit-input {
+    width: 80%;
+    font-size: inherit;
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.reset-button {
+    background-color: var(--error-light);
+    border: none;
+    color: var(--surface);
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+}
+
+.reset-button:hover {
+    background-color: var(--error);
+}
+
+.reset-button:active {
+    background-color: var(--error-dark);
+    transform: scale(0.98);
+}
+
+/* SNACKBAR */
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: var(--snackbar-bg);
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+}
+
+#snackbar.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
 
 /* Styling for the report issues section */
 .report-issues-container {
@@ -188,7 +280,7 @@
 .report-issues-container p {
     margin: 0 0 20px;
     font-size: 16px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .report-link {
@@ -199,7 +291,7 @@
     padding: 10px 20px;
     border: 1px solid #007bff;
     border-radius: 4px;
-    background-color: #fff;
+    background-color: var(--surface);
 }
 
 .report-link:hover {
@@ -207,51 +299,51 @@
     color: #fff;
 }
 
- /* Animations to fade the snackbar in and out */
- @-webkit-keyframes fadein {
-     from {
-         bottom: 0;
-         opacity: 0;
-     }
+/* Animations for the snackbar */
+@-webkit-keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
 
-     to {
-         bottom: 30px;
-         opacity: 1;
-     }
- }
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
 
- @keyframes fadein {
-     from {
-         bottom: 0;
-         opacity: 0;
-     }
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
 
-     to {
-         bottom: 30px;
-         opacity: 1;
-     }
- }
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
 
- @-webkit-keyframes fadeout {
-     from {
-         bottom: 30px;
-         opacity: 1;
-     }
+@-webkit-keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
 
-     to {
-         bottom: 0;
-         opacity: 0;
-     }
- }
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
 
- @keyframes fadeout {
-     from {
-         bottom: 30px;
-         opacity: 1;
-     }
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
 
-     to {
-         bottom: 0;
-         opacity: 0;
-     }
- }
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}

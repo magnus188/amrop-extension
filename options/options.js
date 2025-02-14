@@ -1,6 +1,8 @@
-// Define default prompt text for each prompt
 const defaultPrompts = {
-    prompt1: `You are an AI assistant that summarizes LinkedIn profiles for a headhunter. Given the following profile data in JSON format, please provide the following sections in plain text:
+    prompt1: {
+        name: "Prompt 1",
+        language: "English",
+        text: `You are an AI assistant that summarizes LinkedIn profiles for a headhunter. Given the following profile data in JSON format, please provide the following sections in plain text:
 
 1. **About**
 - If the "about" section is present in the input, provide a five to ten-sentence summary of the person based on that information.
@@ -29,8 +31,12 @@ Companies
 - ...
 
 Input:
-`,
-    prompt2: `You are an AI assistant that extracts and summarizes company information exclusively from a LinkedIn profile's experiences. The input is provided as a JSON object containing an array named "experiences," where each item includes details about the work history—most notably, the company name. Your task is to:
+`
+    },
+    prompt2: {
+        name: "Prompt 2",
+        language: "English",
+        text: `You are an AI assistant that extracts and summarizes company information exclusively from a LinkedIn profile's experiences. The input is provided as a JSON object containing an array named "experiences," where each item includes details about the work history—most notably, the company name. Your task is to:
 
 1. Identify every unique company mentioned in the experiences.
 2. For each company, generate a concise, plain-text overview that includes any available details (such as industry, location, or notable achievements). If certain details are missing, simply include the company name with a brief inferred context if possible.
@@ -39,9 +45,12 @@ Input:
 Do not include any general summary of the candidate’s skills or personal background—focus solely on the companies and their relevant details.
 
 Input:
-`,
-
-    prompt3: `You are an AI assistant that summarizes a LinkedIn profile in plain text. The input is a JSON object containing various sections such as "about", "experiences", "education", and "skills". Your task is to:
+`
+    },
+    prompt3: {
+        name: "Prompt 3",
+        language: "English",
+        text: `You are an AI assistant that summarizes a LinkedIn profile in plain text. The input is a JSON object containing various sections such as "about", "experiences", "education", and "skills". Your task is to:
 
 1. Analyze the provided profile data.
 2. Generate a clear and concise summary that captures the candidate's overall professional background, career highlights, and key skills.
@@ -49,16 +58,167 @@ Input:
 
 Input:
 `
+    }
 };
 
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("newPromptModal");
+
+    document.getElementById("addPromptButton").addEventListener("click", function () {
+        document.getElementById("newPromptModal").style.display = "block";
+    });
+
+
+    document.getElementById("resetAll").addEventListener("click", function () {
+        if (confirm("Are you sure you want to reset all prompt data to factory settings?")) {
+            chrome.storage.sync.set({
+                systemPrompts: defaultPrompts,
+                activePrompt: "prompt1"
+            }, function () {
+                if (chrome.runtime.lastError) {
+                    console.error("Error resetting data:", chrome.runtime.lastError);
+                    showSnackbar("Error resetting data. Please try again.");
+                } else {
+                    showSnackbar("Prompt data reset to factory settings.");
+
+                    // Update the global variables.
+                    systemPrompts = JSON.parse(JSON.stringify(defaultPrompts));
+                    activePrompt = "prompt1";
+
+                    // Update the UI for prompts, leaving the API key unchanged.
+                    document.getElementById("systemPromptText").value = defaultPrompts["prompt1"].text;
+                    document.getElementById("languageSelect").value = defaultPrompts["prompt1"].language;
+                    populatePromptTabs();
+                    checkForChanges();
+                }
+            });
+        }
+    });
+
+    chrome.storage.sync.get(["apiKey", "systemPrompts", "activePrompt"], function (data) {
+        const apiKeyInput = document.getElementById("apiKey");
+        const promptTextArea = document.getElementById("systemPromptText");
+        const languageSelect = document.getElementById("languageSelect");
+
+        if (data.apiKey) {
+            apiKeyInput.value = data.apiKey;
+        }
+        systemPrompts = data.systemPrompts || defaultPrompts;
+        activePrompt = data.activePrompt || "prompt1";
+        updatePromptTabUI();
+
+        promptTextArea.value =
+            (systemPrompts[activePrompt] && systemPrompts[activePrompt].text) ||
+            defaultPrompts[activePrompt].text;
+        languageSelect.value =
+            (systemPrompts[activePrompt] && systemPrompts[activePrompt].language) ||
+            defaultPrompts[activePrompt].language;
+        if (!systemPrompts[activePrompt].name) {
+            systemPrompts[activePrompt].name = defaultPrompts[activePrompt].name || activePrompt;
+        }
+
+        // Save the initial state for change detection.
+        initialState = {
+            apiKey: data.apiKey || "",
+            activePrompt: activePrompt,
+            systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
+        };
+
+        checkForChanges();
+        populatePromptTabs();
+    });
+
+    document.getElementById("apiKey").addEventListener("input", checkForChanges);
+    document.getElementById("languageSelect").addEventListener("change", checkForChanges);
+    document.getElementById("systemPromptText").addEventListener("input", checkForChanges);
+
+    document.getElementById("save").addEventListener("click", function () {
+        const apiKeyInput = document.getElementById("apiKey");
+        const promptTextArea = document.getElementById("systemPromptText");
+        const languageSelect = document.getElementById("languageSelect");
+
+        systemPrompts[activePrompt] = {
+            language: languageSelect.value,
+            text: promptTextArea.value,
+            name: systemPrompts[activePrompt].name || defaultPrompts[activePrompt].name || activePrompt,
+        };
+
+        const apiKey = apiKeyInput.value.trim();
+
+        chrome.storage.sync.set({
+            apiKey: apiKey,
+            systemPrompts: systemPrompts,
+            activePrompt: activePrompt,
+        }, function () {
+            if (chrome.runtime.lastError) {
+                console.error("Error saving settings:", chrome.runtime.lastError);
+                alert("An error occurred while saving settings. Please try again.");
+            } else {
+                showSnackbar("Settings saved successfully");
+                initialState = {
+                    apiKey: apiKey,
+                    activePrompt: activePrompt,
+                    systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
+                };
+                checkForChanges();
+            }
+        });
+    });
+
+    document.getElementById("restoreDefaultPrompt").addEventListener("click", function () {
+        const promptTextArea = document.getElementById("systemPromptText");
+        const languageSelect = document.getElementById("languageSelect");
+
+        systemPrompts[activePrompt] = defaultPrompts[activePrompt];
+        promptTextArea.value = defaultPrompts[activePrompt].text;
+        languageSelect.value = defaultPrompts[activePrompt].language;
+        chrome.storage.sync.set({ systemPrompts: systemPrompts }, function () {
+            if (chrome.runtime && chrome.runtime.lastError) {
+                console.error("Error restoring default prompt:", chrome.runtime.lastError);
+                showSnackbar("An error occurred while restoring the default prompt. Please try again.");
+            } else {
+                showSnackbar("Default prompt restored");
+                checkForChanges();
+            }
+        });
+    });
+
+    const newPromptForm = document.getElementById("newPromptForm");
+    newPromptForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const promptNameInput = document.getElementById("promptName");
+        const promptTextInput = document.getElementById("promptText");
+        const promptLanguageSelect = document.getElementById("promptLanguage");
+
+        const promptName = promptNameInput.value.trim();
+        const promptText = promptTextInput.value.trim();
+        const promptLanguage = promptLanguageSelect.value;
+
+        if (promptName && promptText && promptLanguage) {
+            // Add the new prompt to the global systemPrompts.
+            systemPrompts[promptName] = {
+                name: promptName,
+                text: promptText,
+                language: promptLanguage,
+            };
+
+            // Re-populate the prompt tabs to include the new prompt.
+            populatePromptTabs();
+
+            // Clear form fields and close the modal.
+            promptNameInput.value = "";
+            promptTextInput.value = "";
+            promptLanguageSelect.value = "English";
+            modal.style.display = "none";
+        }
+    });
+});
 
 // Global state variables
 let activePrompt = "prompt1";
 let systemPrompts = {};
-// This variable holds a deep copy of the settings as loaded initially.
 let initialState = null;
 
-// Utility function to update which tab/button is “active”
 function updatePromptTabUI() {
     document.querySelectorAll(".prompt-tab").forEach((button) => {
         if (button.dataset.prompt === activePrompt) {
@@ -69,137 +229,189 @@ function updatePromptTabUI() {
     });
 }
 
-// Function to check whether settings have changed compared to initialState
 function checkForChanges() {
-    const currentApiKey = document.getElementById("apiKey").value.trim();
-    const currentLanguage = document.getElementById("languageSelect").value;
-    const currentPromptText = document.getElementById("systemPromptText").value;
-    // Update systemPrompts for the active prompt
-    systemPrompts[activePrompt] = currentPromptText;
+    const apiKey = document.getElementById("apiKey").value.trim();
+    const promptText = document.getElementById("systemPromptText").value;
+    const languageSelect = document.getElementById("languageSelect");
 
-    // Compare systemPrompts using JSON.stringify for a deep comparison
-    const systemPromptsChanged = JSON.stringify(systemPrompts) !== JSON.stringify(initialState.systemPrompts);
-    const apiKeyChanged = currentApiKey !== initialState.apiKey;
-    const languageChanged = currentLanguage !== initialState.language;
+    systemPrompts[activePrompt] = {
+        language: languageSelect.value,
+        text: promptText,
+        name: systemPrompts[activePrompt].name || defaultPrompts[activePrompt].name || activePrompt,
+    };
+
+    const systemPromptsChanged =
+        JSON.stringify(systemPrompts) !== JSON.stringify(initialState.systemPrompts);
+    const apiKeyChanged = apiKey !== initialState.apiKey;
     const activePromptChanged = activePrompt !== initialState.activePrompt;
 
-    const changes = apiKeyChanged || languageChanged || activePromptChanged || systemPromptsChanged;
+    const changes = apiKeyChanged || activePromptChanged || systemPromptsChanged;
 
     const saveButton = document.getElementById("save");
     if (changes) {
         saveButton.disabled = false;
-        saveButton.style.backgroundColor = "#4285f4";
-        saveButton.style.cursor = "pointer";
+        saveButton.classList.add("active");
     } else {
         saveButton.disabled = true;
-        saveButton.style.backgroundColor = "#dadce0"; // Greyed out
-        saveButton.style.cursor = "not-allowed";
+        saveButton.classList.remove("active");
     }
 }
 
-// On DOMContentLoaded, load settings and set up event listeners
-document.addEventListener("DOMContentLoaded", () => {
-    // Load all settings at once from chrome.storage
-    chrome.storage.sync.get(["apiKey", "language", "systemPrompts", "activePrompt"], (data) => {
-        if (data.apiKey) {
-            document.getElementById("apiKey").value = data.apiKey;
-        }
-        if (data.language) {
-            document.getElementById("languageSelect").value = data.language;
-        }
-        systemPrompts = data.systemPrompts || defaultPrompts;
-        activePrompt = data.activePrompt || "prompt1";
-        updatePromptTabUI();
-        document.getElementById("systemPromptText").value =
-            systemPrompts[activePrompt] || defaultPrompts[activePrompt];
+function enableTabEdit(tabButton) {
+    const labelSpan = tabButton.querySelector(".prompt-label");
+    if (!labelSpan) return;
+    const currentName = labelSpan.textContent;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentName;
+    input.className = "prompt-edit-input";
+    tabButton.replaceChild(input, labelSpan);
+    input.focus();
 
-        // Set initialState as a deep copy of the current state
-        initialState = {
-            apiKey: data.apiKey || "",
-            language: data.language || "",
-            activePrompt: activePrompt,
-            systemPrompts: JSON.parse(JSON.stringify(systemPrompts))
-        };
-        checkForChanges();
+    input.addEventListener("blur", function () {
+        finishEditing(tabButton, input.value);
     });
+    input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            input.blur();
+        }
+    });
+}
 
-    // Listen for changes in the API key, language, and system prompt textarea
-    document.getElementById("apiKey").addEventListener("input", checkForChanges);
-    document.getElementById("languageSelect").addEventListener("change", checkForChanges);
-    document.getElementById("systemPromptText").addEventListener("input", checkForChanges);
+function finishEditing(tabButton, newName) {
+    const newLabel = document.createElement("span");
+    newLabel.className = "prompt-label";
+    newLabel.textContent = newName;
+    const input = tabButton.querySelector("input.prompt-edit-input");
+    if (input) {
+        tabButton.replaceChild(newLabel, input);
+    }
+    const key = tabButton.dataset.prompt;
+    if (systemPrompts[key]) {
+        systemPrompts[key].name = newName;
+    }
+    chrome.storage.sync.set({ systemPrompts: systemPrompts }, function () {
+        if (chrome.runtime.lastError) {
+            console.error("Error updating prompt name:", chrome.runtime.lastError);
+        } else {
+            console.log("Prompt name updated in storage");
+        }
+    });
+    checkForChanges();
+}
 
-    // Set up click event listeners for each prompt tab button
-    document.querySelectorAll(".prompt-tab").forEach((button) => {
-        button.addEventListener("click", () => {
-            // Save the current textarea content into the active prompt before switching
-            systemPrompts[activePrompt] = document.getElementById("systemPromptText").value;
-            // Update the active prompt key based on the button clicked
+function attachEditIconListener(tabButton) {
+    const editIcon = tabButton.querySelector(".edit-icon");
+    if (editIcon) {
+        editIcon.addEventListener("click", function (e) {
+            e.stopPropagation();
+            enableTabEdit(tabButton);
+        });
+    }
+}
+
+function populatePromptTabs() {
+    const promptTabsContainer = document.querySelector(".prompt-tabs");
+    promptTabsContainer.innerHTML = ""; // Clear previous tabs
+
+    // Build an ordered list of keys: default prompts always come first.
+    const defaultKeys = Object.keys(defaultPrompts).filter(key => systemPrompts.hasOwnProperty(key));
+    const customKeys = Object.keys(systemPrompts).filter(key => !defaultPrompts.hasOwnProperty(key));
+    const orderedKeys = [...defaultKeys, ...customKeys];
+
+    orderedKeys.forEach((key) => {
+        const promptData = systemPrompts[key];
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "prompt-tab";
+        button.dataset.prompt = key;
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "prompt-label";
+        labelSpan.textContent = promptData.name || key;
+        button.appendChild(labelSpan);
+
+        const deleteIcon = document.createElement("span");
+        deleteIcon.className = "material-icons delete-icon";
+        deleteIcon.textContent = "close";
+        button.appendChild(deleteIcon);
+
+        const editIcon = document.createElement("span");
+        editIcon.className = "material-icons edit-icon";
+        editIcon.textContent = "edit";
+        button.appendChild(editIcon);
+
+        // When a tab is clicked, switch to that prompt.
+        button.addEventListener("click", function () {
+            const promptTextArea = document.getElementById("systemPromptText");
+            const languageSelect = document.getElementById("languageSelect");
+            // Save current prompt text.
+            systemPrompts[activePrompt].text = promptTextArea.value;
+            // Switch active prompt.
             activePrompt = button.dataset.prompt;
             updatePromptTabUI();
-            // Load the new prompt content into the textarea
-            document.getElementById("systemPromptText").value =
-                systemPrompts[activePrompt] || defaultPrompts[activePrompt];
+
+            promptTextArea.value = systemPrompts[activePrompt].text || "";
+            languageSelect.value = systemPrompts[activePrompt].language || "English";
             checkForChanges();
         });
+
+        // Attach the edit and delete listeners.
+        attachEditIconListener(button);
+        attachDeleteIconListener(button);
+
+        promptTabsContainer.appendChild(button);
     });
+    updatePromptTabUI();
+}
 
-    // Save all settings when the Save button is clicked
-    document.getElementById("save").addEventListener("click", () => {
-        // Save the current textarea content for the active prompt
-        systemPrompts[activePrompt] = document.getElementById("systemPromptText").value;
+function attachDeleteIconListener(tabButton) {
+    const deleteIcon = tabButton.querySelector(".delete-icon");
+    if (deleteIcon) {
+        deleteIcon.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const key = tabButton.dataset.prompt;
+            if (confirm(`Are you sure you want to delete the prompt "${systemPrompts[key].name}"?`)) {
+                // Remove the prompt from systemPrompts.
+                delete systemPrompts[key];
 
-        const apiKey = document.getElementById("apiKey").value.trim();
-        const language = document.getElementById("languageSelect").value;
+                // If the deleted prompt was active, switch to another prompt if available.
+                if (activePrompt === key) {
+                    const remainingPrompts = Object.keys(systemPrompts);
+                    activePrompt = remainingPrompts.length > 0 ? remainingPrompts[0] : "";
 
-        // Save all settings to chrome.storage.sync
-        chrome.storage.sync.set(
-            {
-                apiKey,
-                language,
-                systemPrompts,
-                activePrompt
-            },
-            () => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error saving settings:", chrome.runtime.lastError);
-                    alert("An error occurred while saving settings. Please try again.");
-                } else {
-                    showSnackbar("Settings saved successfully");
-                    // After saving, update initialState to reflect the new settings
-                    initialState = {
-                        apiKey,
-                        language,
-                        activePrompt,
-                        systemPrompts: JSON.parse(JSON.stringify(systemPrompts))
-                    };
-                    checkForChanges();
+                    // Update the prompt text and language if there is an active prompt.
+                    const promptTextArea = document.getElementById("systemPromptText");
+                    const languageSelect = document.getElementById("languageSelect");
+                    if (activePrompt) {
+                        promptTextArea.value = systemPrompts[activePrompt].text || "";
+                        languageSelect.value = systemPrompts[activePrompt].language || "English";
+                    } else {
+                        promptTextArea.value = "";
+                        languageSelect.value = "English";
+                    }
                 }
-            }
-        );
-    });
 
-    // Restore default text for the currently active prompt when clicked
-    document.getElementById("restoreDefaultPrompt").addEventListener("click", () => {
-        systemPrompts[activePrompt] = defaultPrompts[activePrompt];
-        document.getElementById("systemPromptText").value = defaultPrompts[activePrompt];
-        chrome.storage.sync.set({ systemPrompts }, () => {
-            if (chrome.runtime && chrome.runtime.lastError) {
-                console.error("Error restoring default prompt:", chrome.runtime.lastError);
-                showSnackbar("An error occurred while restoring the default prompt. Please try again.");
-            } else {
-                showSnackbar("Default prompt restored");
-                checkForChanges();
+                // Save the updated prompts (and active prompt) to storage.
+                chrome.storage.sync.set({ systemPrompts: systemPrompts, activePrompt: activePrompt }, function () {
+                    if (chrome.runtime.lastError) {
+                        console.error("Error deleting prompt:", chrome.runtime.lastError);
+                    } else {
+                        showSnackbar("Prompt deleted successfully");
+                        populatePromptTabs();
+                        checkForChanges();
+                    }
+                });
             }
         });
-    });
-});
+    }
+}
 
-// Snackbar utility to show messages at the bottom of the screen
 function showSnackbar(text) {
     const snack = document.getElementById("snackbar");
     snack.textContent = text;
     snack.className = "show";
-    setTimeout(() => {
+    setTimeout(function () {
         snack.className = snack.className.replace("show", "");
     }, 3000);
 }
