@@ -1,6 +1,6 @@
 {
   "name": "amrop-extension",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "![icon](./assets/icon128.png)",
   "type": "module",
   "directories": {
