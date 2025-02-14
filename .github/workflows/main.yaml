@@ -21,6 +21,12 @@ jobs:
         with:
           node-version: '16'
 
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
       # 2) Automatically bump package.json version & create tag using standard-version
       - name: Bump version with standard-version
         run: |
