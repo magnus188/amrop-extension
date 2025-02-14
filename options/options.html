@@ -4,10 +4,19 @@
 <head>
     <meta charset="UTF-8" />
     <title>Extension Settings</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="options.css">
+    <link rel="stylesheet" href="modal.css">
 </head>
 
 <body>
+    <div class="report-issues-container" id="reportHeader">
+        <p>Found a bug or have a feature request?</p>
+        <a href="https://github.com/magnus188/amrop-extension/issues" target="_blank" class="report-link">
+            Report it on GitHub
+        </a>
+    </div>
+
     <div class="settings-container">
         <h2>Settings</h2>
 
@@ -21,12 +30,22 @@
         <div class="form-group">
             <label>Need a Gemini API Key?</label>
             <a href="https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw.."
-                target="_blank">Click here to get one for free</a>
+                target="_blank">
+                Click here to get one for free
+            </a>
         </div>
 
-        <!-- Output language selection -->
+        <!-- System Prompt Tabs Section -->
+        <div class="tabs-wrapper">
+            <div class="prompt-tabs">
+                <!-- Dynamic prompt tabs get inserted here -->
+            </div>
+            <button id="addPromptButton" type="button">Add Prompt</button>
+        </div>
+
+        <!-- Language Select for the active prompt -->
         <div class="form-group">
-            <label for="languageSelect">Output Language</label>
+            <label for="languageSelect">Language</label>
             <select id="languageSelect" class="form-control">
                 <option value="English">English</option>
                 <option value="Norwegian">Norwegian</option>
@@ -34,35 +53,49 @@
             </select>
         </div>
 
-        <!-- System Prompt Tabs Section -->
+        <!-- Prompt Text Area and Restore Button -->
         <div class="form-group">
-            <label>System Prompts</label>
-            <div class="prompt-tabs">
-                <button type="button" class="prompt-tab" data-prompt="prompt1">
-                    Prompt 1
-                </button>
-                <button type="button" class="prompt-tab" data-prompt="prompt2">
-                    Prompt 2
-                </button>
-                <button type="button" class="prompt-tab" data-prompt="prompt3">
-                    Prompt 3
-                </button>
-            </div>
-        </div>
-        <div class="form-group">
-            <!-- This textarea shows the content for the active prompt -->
             <textarea id="systemPromptText" class="form-control" rows="5" placeholder="Enter your prompt..."></textarea>
-            <!-- Restore Default for the active prompt -->
-            <button id="restoreDefaultPrompt" class="restore-button" type="button">
-                Restore Default Prompt
-            </button>
+            <button id="restoreDefaultPrompt" class="restore-button" type="button">Restore Default Prompt</button>
         </div>
 
-        <!-- Save button for all settings -->
-        <button id="save" class="save-button">Save</button>
+        <div class="button-row">
+            <button id="save" class="save-button" disabled>Save</button>
+            <button id="resetAll" class="reset-button" type="button">Reset Settings</button>
+        </div>
     </div>
+
+    <!-- New Prompt Modal -->
+    <div id="newPromptModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Add New Prompt</h2>
+            <form id="newPromptForm">
+                <div class="form-group">
+                    <label for="promptName">Prompt Name</label>
+                    <input type="text" id="promptName" class="form-control" placeholder="Enter prompt name" required>
+                </div>
+                <div class="form-group">
+                    <label for="promptLanguage">Language</label>
+                    <select id="promptLanguage" class="form-control" required>
+                        <option value="English">English</option>
+                        <option value="Norwegian">Norwegian</option>
+                        <option value="Finnish">Finnish</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="promptText">Prompt Text</label>
+                    <textarea id="promptText" class="form-control" rows="4" placeholder="Enter prompt text"
+                        required></textarea>
+                </div>
+                <button type="submit" class="save-button">Add Prompt</button>
+            </form>
+        </div>
+    </div>
+
     <div id="snackbar"></div>
 
+    <script src="modal.js"></script>
     <script src="options.js"></script>
 </body>
 
