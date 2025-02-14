@@ -1,0 +1,33 @@
+:root {
+    /* Material Color Variables */
+    --primary: #4285f4;
+    --primary-dark: #3367d6;
+    --primary-light: #8ab4f8;
+
+    --secondary: #00bcd4;
+    --secondary-dark: #4ec03c;
+    --secondary-light: #b2ebf2;
+
+    --background: #f1f3f4;
+    --surface: #ffffff;
+    --text-primary: #202124;
+    --border: #dadce0;
+
+    --link: #4285f4;
+    --restore: #e0e0e0;
+    --restore-hover: #cfcfcf;
+    --snackbar-bg: #333;
+
+    --success: #4ec03c;
+    --success-dark: #369d26;
+
+    --error: #e13719;
+    --error-light: #fe5e41;
+    --error-dark: #b00202;
+
+    --modal-overlay: rgba(0, 0, 0, 0.4);
+    --modal-content-bg: #fefefe;
+    --modal-border: #888;
+    --close-color: #aaa;
+    --close-hover-color: black;
+}
