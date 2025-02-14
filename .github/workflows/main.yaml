@@ -44,11 +44,13 @@ jobs:
           EXT_VERSION=$(jq -r '.version' package.json)
           echo "EXT_VERSION=$EXT_VERSION" >> $GITHUB_ENV
 
-      # 5) Zip the extension from src/ directory
       - name: Zip the extension
         run: |
-          cd src
-          zip -r ../amrop-extension.zip .
+          # Extract version from manifest.json
+          VERSION=$(jq -r '.version' src/manifest.json)
+          
+          # Zip the entire `src` folder into amrop-extension-VERSION.zip
+          zip -r "amrop-extension-v${VERSION}.zip" src
 
       # 6) Create GitHub Release with zip
       - name: Create GitHub Release
