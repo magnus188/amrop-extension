@@ -12,16 +12,13 @@ body:
         
         Please make sure your issue has not already been reported. Provide as much detail as possible to help with debugging.
         
-  - type: dropdown
+  - type: input
     id: version
     attributes:
       label: Version
       description: What version of the extension are you running?
-      options:
-        - "v1.1.0"
-        - "v1.0.0"
-        - "v0.9.5"
-      default: 0
+      placeholder: Enter version (e.g., v1.1.0)
+      render: shell
     validations:
       required: true
 
