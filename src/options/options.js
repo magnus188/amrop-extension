@@ -62,8 +62,7 @@ Input:
     prompt4: {
         name: "Default 4",
         language: "English",
-        text: `
-        You are an AI assistant helping a headhunter summarize LinkedIn profiles for client presentations. Your task is to create a concise, structured, and experience-focused summary of a candidate’s professional background and education based on available LinkedIn information.
+        text: `You are an AI assistant helping a headhunter summarize LinkedIn profiles for client presentations. Your task is to create a concise, structured, and experience-focused summary of a candidate’s professional background and education based on available LinkedIn information.
 
 Format:
 Experience-focused summary:
