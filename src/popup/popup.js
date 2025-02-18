@@ -40,6 +40,7 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
                     return;
                 }
                 if (resp && resp.experiences) {
+                    console.log(resp);
                     processScrapedData(resp);
                 }
             });
