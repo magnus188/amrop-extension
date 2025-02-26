@@ -152,7 +152,6 @@ async function fetchGemini(profileData, geminiApiKey, promptInstruction, languag
 
     // Combine instruction and profile data
     const combinedPrompt = `${promptInstruction}\n${profileJson}\n\n All output must be written in ${language}!`;
-    console.log(combinedPrompt)
 
     // Build the request body as per Gemini's requirements
     const requestBody = {

@@ -378,6 +378,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.storage.local.set(
                 { aboutText: about, name: name, nextPageScrapeNeeded: true },
                 () => {
+                    sendResponse({ status: "navigating", message: "Redirecting to full experiences page" });
+                    // Navigate away after a short delay to ensure sendResponse is sent.
+                    setTimeout(() => {
+                        window.location.href = seeAllLink.href;
+                    }, 100);
                     window.location.href = seeAllLink.href;
                 }
             );
