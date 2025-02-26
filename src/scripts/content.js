@@ -383,7 +383,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     setTimeout(() => {
                         window.location.href = seeAllLink.href;
                     }, 100);
-                    window.location.href = seeAllLink.href;
+                    // sendResponse is called before navigation to provide status feedback.
                 }
             );
             // Don't call sendResponse because we're navigating.
