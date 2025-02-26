@@ -99,7 +99,7 @@ McKinsey & Company – Global consultancy firm specializing in strategy and lead
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SEND_PROMPT') {
         chrome.storage.sync.get(['apiKey', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
-            const { apiKey, language, systemPrompts, activePrompt } = data;
+            const { apiKey, systemPrompts, activePrompt } = data;
 
             if (!systemPrompts) {
                 chrome.storage.sync.set({
@@ -109,6 +109,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
 
             promptInstruction = systemPrompts[activePrompt].text
+            language = systemPrompts[activePrompt].language
 
 
 
@@ -150,7 +151,8 @@ async function fetchGemini(profileData, geminiApiKey, promptInstruction, languag
     const profileJson = JSON.stringify(profileData, null, 2); // Pretty-print for readability
 
     // Combine instruction and profile data
-    const combinedPrompt = `${promptInstruction}\n${profileJson}\n All output shall be written in ${language}!`;
+    const combinedPrompt = `${promptInstruction}\n${profileJson}\n\n All output must be written in ${language}!`;
+    console.log(combinedPrompt)
 
     // Build the request body as per Gemini's requirements
     const requestBody = {
