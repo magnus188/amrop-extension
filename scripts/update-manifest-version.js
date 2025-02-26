@@ -14,7 +14,8 @@ const packageData = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const newVersion = packageData.version;
 
 // 2) Read manifest.json
-const manifestJsonPath = path.join(__dirname, '..', 'src', 'manifest.json'); // or wherever manifest is
+// const manifestJsonPath = path.join(__dirname, '..', 'src', 'manifest.json'); // or wherever manifest is
+const manifestJsonPath = path.join(__dirname, 'manifest.json'); // or wherever manifest is
 const manifestData = JSON.parse(fs.readFileSync(manifestJsonPath, 'utf8'));
 
 // 3) Overwrite manifest version
