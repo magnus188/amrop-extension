@@ -16,11 +16,33 @@ body:
     id: version
     attributes:
       label: Version
-      description: What version of the extension are you running?
+      description: What version of the extension are you running? This can be found in the Options page of the extension.
       placeholder: Enter version (e.g., v1.1.0)
       render: shell
     validations:
       required: true
+
+  - type: input
+    id: linked-in-profile
+    attributes:
+      label: Linked In Profile
+      description: Please provide a link to the LinkedIn profile that caused the issue.
+      placeholder: Ola Nordmann
+      render: shell
+    validations:
+      required: false
+      
+  - type: textarea
+    id: system-prompt
+    attributes:
+      label: System Prompt
+      description: The system prompt used to generate the response.
+      placeholder: |
+        System prompt here.
+      render: shell
+    validations:
+      required: false
+
 
   - type: textarea
     id: what-happened
