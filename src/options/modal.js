@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function checkFormValidity() {
         if (newPromptForm.checkValidity()) {
             submitButton.disabled = false;
+            submitButton.classList.add("active");
         } else {
             submitButton.disabled = true;
         }

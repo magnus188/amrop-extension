@@ -19,37 +19,52 @@ document.getElementById('scrapeButton').addEventListener('click', () => {
         }
         scrapeButton.disabled = true;
 
-        // Set a 30 second timeout to handle slow responses.
+        // Set a 15 second timeout to handle slow responses.
         scrapeTimeout = setTimeout(() => {
             updateResponseDiv("Error: Request timed out");
             setLoadingState(false);
             scrapeButton.disabled = false;
-        }, 30000);
+        }, 15000);
 
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            // Send the scrape request.
-            chrome.tabs.sendMessage(tabs[0].id, { action: "scrapeProfile" }, (resp) => {
-                if (chrome.runtime.lastError) {
-                    console.log(chrome.runtime.lastError.message);
-                    updateResponseDiv(`Something went wrong. Please refresh window and try again.`);
-                    setLoadingState(false);
-                    setIcon(true);
+            const tabId = tabs[0].id;
+
+            // Optionally, check if you're on the right URL.
+            if (!tabs[0].url.includes("linkedin.com")) {
+                updateResponseDiv("This extension only works on LinkedIn.");
+                return;
+            }
+
+            // Programmatically inject the content script.
+            chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['src/scripts/content.js']
+                // TODO: must be updated when changing to chrome storage download
+            }, () => {
+                chrome.tabs.sendMessage(tabs[0].id, { action: "scrapeProfile" }, (resp) => {
+                    if (chrome.runtime.lastError) {
+                        console.log(chrome.runtime.lastError.message);
+                        updateResponseDiv(`Something went wrong. Please refresh window and try again.`);
+                        setLoadingState(false);
+                        setIcon(true);
 
 
-                    scrapeButton.disabled = false;
-                    return;
-                }
-                if (resp && resp.experiences) {
-                    processScrapedData(resp);
-                }
+                        scrapeButton.disabled = false;
+                        return;
+                    }
+                    if (resp && resp.experiences) {
+                        console.log(resp);
+                        processScrapedData(resp);
+                    }
+                });
             });
         });
     });
 });
 
-function setIcon(visible=true) {
+function setIcon(visible = true) {
     buttonIcon.style.display = visible ? "block" : "none";
-    
+
 }
 
 // Listen for the SCRAPE_COMPLETE message sent from the full-page content script.
@@ -95,7 +110,7 @@ function processScrapedData(info) {
 }
 
 
-function updateButtonText(text, timeout=3000) {
+function updateButtonText(text, timeout = 3000) {
     setIcon(false);
     buttonText.display = "block";
     buttonText.textContent = text;
