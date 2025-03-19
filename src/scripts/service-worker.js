@@ -42,7 +42,7 @@ Input:
 2. For each company, generate a concise, plain-text overview that includes any available details (such as industry, location, or notable achievements). If certain details are missing, simply include the company name with a brief inferred context if possible.
 3. Present your output as a bullet-point list where each bullet represents a company and its overview.
 
-Do not include any general summary of the candidate’s skills or personal background—focus solely on the companies and their relevant details.
+Do not include any general summary of the candidate's skills or personal background—focus solely on the companies and their relevant details.
 
 Input:
 `
@@ -62,15 +62,15 @@ Input:
     prompt4: {
         name: "Default 4",
         language: "English",
-        text: `You are an AI assistant helping a headhunter summarize LinkedIn profiles for client presentations. Your task is to create a concise, structured, and experience-focused summary of a candidate’s professional background and education based on available LinkedIn information.
+        text: `You are an AI assistant helping a headhunter summarize LinkedIn profiles for client presentations. Your task is to create a concise, structured, and experience-focused summary of a candidate's professional background and education based on available LinkedIn information.
 
 Format:
 Experience-focused summary:
 
-Provide a clear and structured overview of the candidate’s most relevant experience, emphasizing leadership roles, responsibilities, and years in key positions.
+Provide a clear and structured overview of the candidate's most relevant experience, emphasizing leadership roles, responsibilities, and years in key positions.
 Use a structured approach, for example:
 "The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of experience as CFO across [Company A] and [Company B]. She also has consulting experience."
-Mention the candidate’s educational background briefly at the end, e.g., "She holds a master’s degree in economics from BI."
+Mention the candidate's educational background briefly at the end, e.g., "She holds a master's degree in economics from BI."
 List of companies the candidate has worked for:
 
 For each company, provide:
@@ -84,7 +84,7 @@ Ensure varied phrasing across candidates to maintain a natural and professional 
 The language should be neutral and concise, avoiding overly elaborate or AI-generated phrasing.
 Example output:
 Summary:
-The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of CFO experience at [Company A] and [Company B]. She also has a background in consulting. She holds a master’s degree in economics from BI.
+The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of CFO experience at [Company A] and [Company B]. She also has a background in consulting. She holds a master's degree in economics from BI.
 
 Companies the candidate has worked for:
 
@@ -98,8 +98,8 @@ McKinsey & Company – Global consultancy firm specializing in strategy and lead
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SEND_PROMPT') {
-        chrome.storage.sync.get(['apiKey', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
-            const { apiKey, systemPrompts, activePrompt } = data;
+        chrome.storage.sync.get(['apiKey', 'apiProvider', 'openaiModel', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
+            const { apiKey, apiProvider, openaiModel, systemPrompts, activePrompt } = data;
 
             if (!systemPrompts) {
                 chrome.storage.sync.set({
@@ -111,31 +111,105 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             promptInstruction = systemPrompts[activePrompt].text
             language = systemPrompts[activePrompt].language
 
-
-
             if (!apiKey) {
                 sendResponse({ error: 'No API key provided. Add one in settings.' });
                 return;
             }
 
             try {
-
                 if (message.resp.experiences.length == 0) {
                     throw new Error("Could not find any LinkedIn profile.");
-
                 }
 
-                // Replace fetchGemini with the actual function to call Google Gemini
-                const result = await fetchGemini(message.resp, apiKey, promptInstruction, language);
+                let result;
+                if (apiProvider === 'openai') {
+                    result = await fetchOpenAI(message.resp, apiKey, promptInstruction, language, openaiModel);
+                } else {
+                    result = await fetchGemini(message.resp, apiKey, promptInstruction, language);
+                }
                 sendResponse({ result });
             } catch (error) {
                 sendResponse({ error: error.message });
             }
         });
-        // Indicate asynchronous response
         return true;
     }
 });
+
+/**
+ * Calls OpenAI's API to get AI-generated text.
+ * @param {Object} profileData - The LinkedIn profile data
+ * @param {string} openaiApiKey - The API key for accessing OpenAI
+ * @param {string} promptInstruction - The system prompt instruction
+ * @param {string} language - The desired output language
+ * @param {string} model - The OpenAI model to use
+ * @returns {string} - The text generated by OpenAI
+ */
+async function fetchOpenAI(profileData, openaiApiKey, promptInstruction, language, model) {
+    const endpoint = 'https://api.openai.com/v1/chat/completions';
+
+    // Convert the profileData object to a JSON string
+    const profileJson = JSON.stringify(profileData, null, 2);
+
+    // Combine instruction and profile data
+    const combinedPrompt = `${promptInstruction}\n${profileJson}\n\n All output must be written in ${language}!`;
+
+    // Build the request body as per OpenAI's requirements
+    const requestBody = {
+        model: model,
+        messages: [
+            {
+                role: "system",
+                content: promptInstruction
+            },
+            {
+                role: "user",
+                content: `${profileJson}\n\n All output must be written in ${language}!`
+            }
+        ],
+        temperature: 0.7
+    };
+
+    // Make the POST request to OpenAI's API
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiApiKey}`
+        },
+        body: JSON.stringify(requestBody)
+    });
+
+    // Check if the response status is not OK (200-299)
+    if (!response.ok) {
+        let errorMsg = 'Unknown error from OpenAI API.';
+        try {
+            const errorData = await response.json();
+            if (errorData.error && errorData.error.message) {
+                errorMsg = errorData.error.message;
+            }
+        } catch (_ignore) {
+            // If response is not JSON, retain the default error message
+        }
+        throw new Error(errorMsg);
+    }
+
+    // Parse the JSON response
+    const data = await response.json();
+
+    // Validate the presence of choices and extract the text
+    if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+        throw new Error('OpenAI response did not include any choices.');
+    }
+
+    const firstChoice = data.choices[0];
+
+    if (!firstChoice.message || !firstChoice.message.content) {
+        throw new Error('OpenAI response did not include any content.');
+    }
+
+    return firstChoice.message.content.trim();
+}
 
 /**
  * Calls Google Gemini's generateContent endpoint to get AI-generated text.

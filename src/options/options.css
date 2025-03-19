@@ -85,24 +85,30 @@ a:hover {
 
 /* Save button */
 .save-button {
-    transition: 0.2s all;
-    background-color: #dadce0;
+    background-color: var(--primary);
     color: var(--surface);
     padding: 10px 20px;
     border: none;
     border-radius: 4px;
     font-size: 14px;
-    cursor: not-allowed;
-    transition: background-color 0.2s;
-}
-
-.save-button.active:hover {
-    background-color: var(--success-dark);
-}
-
-.save-button.active {
-    background-color: var(--success);
     cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.save-button:disabled {
+    background-color: var(--disabled);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.save-button:not(:disabled):hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.save-button:not(:disabled):active {
+    transform: translateY(0);
 }
 
 textarea {
@@ -156,6 +162,11 @@ textarea {
     border-radius: 4px;
     position: relative;
     white-space: nowrap;
+    min-width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
 }
 
 .prompt-tab.active {
@@ -202,8 +213,26 @@ textarea {
 
 /* Style for the input that replaces the label */
 .prompt-edit-input {
-    width: 80%;
+    width: 100%;
     font-size: inherit;
+    padding: 4px 8px;
+    margin: 0;
+    border: 1px solid var(--primary);
+    background: var(--surface);
+    outline: none;
+    text-align: center;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+
+.prompt-edit-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+/* When editing, adjust the tab padding to accommodate the input */
+.prompt-tab.editing {
+    padding: 4px 8px;
 }
 
 .button-row {
@@ -213,25 +242,28 @@ textarea {
     margin-top: 20px;
 }
 
+/* Reset button */
 .reset-button {
-    background-color: var(--error-light);
-    border: none;
-    color: var(--surface);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
     padding: 10px 20px;
     font-size: 14px;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    display: inline-block;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .reset-button:hover {
-    background-color: var(--error);
+    background-color: var(--background);
+    border-color: var(--error);
+    color: var(--error);
 }
 
 .reset-button:active {
-    background-color: var(--error-dark);
-    transform: scale(0.98);
+    background-color: var(--error-light);
+    color: var(--surface);
 }
 
 /* SNACKBAR */
@@ -339,4 +371,80 @@ textarea {
         bottom: 0;
         opacity: 0;
     }
+}
+
+/* Radio button styling */
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 5px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.radio-label:hover {
+    background-color: var(--background);
+    border-color: var(--primary);
+}
+
+.radio-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-custom {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom {
+    border-color: var(--primary);
+    background-color: var(--primary);
+}
+
+.radio-custom::after {
+    content: '';
+    position: absolute;
+    display: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--surface);
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+    display: block;
+}
+
+.radio-text {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-text {
+    color: var(--primary);
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom + .radio-text {
+    color: var(--primary);
 }

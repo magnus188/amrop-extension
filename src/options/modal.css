@@ -42,18 +42,10 @@
     text-decoration: none;
 }
 
-/* Prompt tabs container styled as flex to place the add button on the right */
-.prompt-tabs {
-    display: flex;
-    align-items: center;
-}
-
-.prompt-tab {
-    margin-right: 5px;
-}
 
 /* Add Prompt button styling */
 #addPromptButton {
+    width: 15%;
     margin-left: auto;
     background-color: var(--primary);
     color: var(--surface);

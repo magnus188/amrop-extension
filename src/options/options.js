@@ -1,96 +1,94 @@
 const defaultPrompts = {
     prompt1: {
-        name: "Default 1",
+        name: "Longlist Presentation",
         language: "English",
-        text: `You are an AI assistant that summarizes LinkedIn profiles for a headhunter. Given the following profile data in JSON format, please provide the following sections in plain text:
-
-1. **About**
-- If the "about" section is present in the input, provide a five to ten-sentence summary of the person based on that information.
-- If the "about" section is missing, create a five to ten-sentence summary of the person using the available data from the "experiences" section.
-
-2. **Experiences**
-- A list formatted similarly to LinkedIn's, with each item including the job title, company, duration, and location. For example:
-    - Senior Recruiter at McKinsey & Company. 2 years 11 months. Oslo, Norway.
-
-3. **Companies**
-- A bullet-point list of each company, with a short paragraph (5-10 sentences) about each company. Include facts like sector, revenue, and what it does. If specific information is unavailable, dont include it.
-
-Keep the text organized and easy to read. Use line breaks to separate sections and ensure clarity. Keep the language strictly informative. Do not include rich text or markdown; only provide raw text following this exact structure:
-
-About
-[A short summary here]
-
-Experiences
-- [Experience 1]
-- [Experience 2]
-- ...
-
-Companies
-- [Company 1 overview]
-- [Company 2 overview]
-- ...
-
-Input:
-`
+        text: `You are an AI assistant supporting an executive search consultant in creating a structured, concise, and experience-driven summary of a candidate's professional background for client presentations. Based on the candidate's LinkedIn profile, you will summarize their experience with a focus on leadership roles, responsibilities, key industries, and education. Do not include board positions, "Board Member," or "Trusted Adviser" roles.
+In addition to LinkedIn information, you must actively search for company details related to the organizations the candidate has worked for. This information must be sourced externally, not solely from LinkedIn. You can search for this data on platforms such as Google (google.no), Proff.no, or the company's official website. Many companies also publish annual reports on their websites, which may include details such as the number of employees or revenue/operating income. For publicly listed companies, relevant sources may also include:
+Number of employees
+EBIT or operating income/revenue (reported in MNOK, rounded to whole numbers)
+This requires external verification. Do not assume figures—retrieve them from Proff.no, company annual reports, or stock exchange filings.
+If EBIT or revenue is unavailable, state: "EBIT or operating income: Not available." Do not omit this field.
+If a company is part of a larger corporate structure, attempt to find EBIT or revenue for the most relevant entity. Always cite the source of EBIT or revenue (e.g., "Retrieved from Proff.no, as of 2024").
+ 
+When searching on Proff.no or the internet in general, note that company names may be listed differently on LinkedIn. First, identify the correct legal name of the company before searching for corporate data. Apply logical reasoning to match the LinkedIn-listed company with the information found on Proff.no.
+For example: Amrop Norge AS is listed as Amrop Norge on LinkedIn.
+International companies often include "Norway" or "Norge" in their legal name, such as:
+BearingPoint Norway AS
+ 
+Format:
+Experience and Education Summary:
+Provide a clear and structured overview of the candidate's most relevant experience, emphasizing leadership roles, responsibilities, and tenure in key positions. Maintain a concise yet informative approach, as demonstrated in the example below:
+ 
+Example:
+"The candidate has extensive leadership experience in the energy and industrial sectors, with key roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of CFO experience from [Company A] and [Company B]. She also has a background in strategy and consulting. She holds a master's degree in economics from BI."
+ 
+Company Overview:
+For each company where the candidate has worked, include the following details based on searches on Proff.no or stock exchange data:
+ 
+Company: Name of the company
+Description: Brief explanation of the company's operations
+Number of employees: Retrieved from Proff.no or stock exchange reports
+EBIT / Revenue: Stated in MNOK from Proff.no or publicly listed annual reports
+If EBIT is unavailable, write: "EBIT: Not available."
+Example:
+Company Overview:
+Equinor – Energy company focused on oil, gas, and renewables. Approx. 21,000 employees. EBIT: 470,000 MNOK.
+Statkraft – State-owned renewable energy company. Approx. 5,000 employees. EBIT: 18,000 MNOK.
+McKinsey & Company – Global consultancy specializing in strategy and management. Approx. 30,000 employees. EBIT: Not available.
+ 
+Language and Tone:
+The summary should be clear, structured, and objective, avoiding speculation or information not explicitly stated in the LinkedIn profile.
+Refrain from excessive adjectives or overly AI-generated phrasing.
+Use varied sentence structures to maintain a professional and natural flow.`
     },
     prompt2: {
-        name: "Default 2",
+        name: "Longlist – Board Positions",
         language: "English",
-        text: `You are an AI assistant that extracts and summarizes company information exclusively from a LinkedIn profile's experiences. The input is provided as a JSON object containing an array named "experiences," where each item includes details about the work history—most notably, the company name. Your task is to:
-
-1. Identify every unique company mentioned in the experiences.
-2. For each company, generate a concise, plain-text overview that includes any available details (such as industry, location, or notable achievements). If certain details are missing, simply include the company name with a brief inferred context if possible.
-3. Present your output as a bullet-point list where each bullet represents a company and its overview.
-
-Do not include any general summary of the candidate’s skills or personal background—focus solely on the companies and their relevant details.
-
-Input:
-`
+        text: `You are an AI assistant supporting an executive search consultant in creating a structured and experience-driven summary of a candidate's board positions based on their LinkedIn profile. The goal is to provide a concise overview of the candidate's board experience, with emphasis on sector, company size, and strategic contributions.
+Format:
+Board Experience Summary:
+* Provide an overview of the candidate's board positions, focusing on industries, strategic involvement, and any leadership roles within the board (e.g., Chairperson, Audit Committee Member).
+* Highlight any specialized expertise (e.g., ESG, finance, technology, growth companies).
+* Include notable executive roles such as CEO or COO to provide context.
+Example: "The candidate has extensive board experience in technology companies, with a particular focus on firms in growth and transformation phases. She has been a board member at [Company A] since 2018 and currently serves as Chairperson at [Company B], where she has contributed to strategic scaling and international expansion. She also has operational experience as CEO of [Company C] from 2012 to 2018."
+Example Output: "The candidate has over 10 years of board experience in finance, technology, and industry. She is Chairperson of [Company A] and has been a board member at [Company B] and [Company C], focusing on strategy, compliance, and digital transformation. She has significant experience with growth companies and private equity-owned firms. She also has operational experience as CEO of [Company C] from 2012 to 2018."
+Language and Tone:
+* Structure the information clearly and professionally.
+* Maintain a neutral, concise, and experienced tone.
+* Avoid speculation—base all statements on explicitly available information from LinkedIn.`
     },
     prompt3: {
-        name: "Default 3",
+        name: "Analysis of Career Development and Progression",
         language: "English",
-        text: `You are an AI assistant that summarizes a LinkedIn profile in plain text. The input is a JSON object containing various sections such as "about", "experiences", "education", and "skills". Your task is to:
-
-1. Analyze the provided profile data.
-2. Generate a clear and concise summary that captures the candidate's overall professional background, career highlights, and key skills.
-3. Produce a narrative summary in one or two paragraphs without bullet lists or separate sections for companies. Focus on the person's career trajectory rather than detailed company information.
-
-Input:
-`
+        text: `You are an AI assistant supporting an executive search consultant in analyzing a candidate's career development based on their LinkedIn profile. Assess how the candidate has progressed in their career, with a focus on increasing responsibilities, industry transitions, and any patterns that may indicate strategic choices or career direction.
+Key Aspects to Analyze:
+Career Development:
+·       Describe the candidate's career trajectory, highlighting transitions between roles, companies, and industries.
+·       Evaluate responsibility progression and whether their roles reflect natural growth or strategic shifts.
+·       Identify career gaps, lateral moves, or unexpected changes and hypothesize potential reasons based on available information.
+Leadership Development:
+·       Assess how the candidate has advanced within organizations, including shifts from operational to strategic roles.
+·       Identify when and how leadership responsibilities have expanded (e.g., team management, departmental oversight, P&L ownership).
+·       Determine whether the candidate has exposure to board work, advisory roles, or other senior leadership functions.
+Patterns and Strategic Choices:
+·       Identify recurring themes, such as specialization within a niche, broad cross-functional experience, or frequent industry changes.
+·       Assess whether the candidate has made deliberate career choices to develop specific competencies or if their progression appears opportunistic.
+·       Look for geographical patterns (e.g., international experience, returning to specific markets).
+Additional Considerations:
+·       Does the candidate's education or training support their career development?
+·       Have they worked in both large corporations and smaller companies? In the public or private sector?
+·       Do they have experience with both privately owned and publicly traded companies, or involvement with Private Equity (PE) or Venture Capital (VC)?
+·       Are there indications of stagnation or lack of career progression?
+Language and Tone:
+·       Structure the information clearly and professionally.
+·       Maintain a neutral, concise, and experienced tone.
+·       Avoid speculation—base all insights strictly on explicitly available information.`
     },
     prompt4: {
-        name: "Default 4",
+        name: "Brief Summary",
         language: "English",
-        text: `You are an AI assistant helping a headhunter summarize LinkedIn profiles for client presentations. Your task is to create a concise, structured, and experience-focused summary of a candidate’s professional background and education based on available LinkedIn information.
-
-Format:
-Experience-focused summary:
-
-Provide a clear and structured overview of the candidate’s most relevant experience, emphasizing leadership roles, responsibilities, and years in key positions.
-Use a structured approach, for example:
-"The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of experience as CFO across [Company A] and [Company B]. She also has consulting experience."
-Mention the candidate’s educational background briefly at the end, e.g., "She holds a master’s degree in economics from BI."
-List of companies the candidate has worked for:
-
-For each company, provide:
-Company name
-A brief description of its business
-Number of employees
-EBIT (retrieved from Proff.no, listed in MNOK without decimals)
-Language and tone:
-The summary should be clear, structured, and objective, avoiding unnecessary adjectives, speculation, or any information not explicitly stated in the LinkedIn profile.
-Ensure varied phrasing across candidates to maintain a natural and professional tone.
-The language should be neutral and concise, avoiding overly elaborate or AI-generated phrasing.
-Example output:
-Summary:
-The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of CFO experience at [Company A] and [Company B]. She also has a background in consulting. She holds a master’s degree in economics from BI.
-
-Companies the candidate has worked for:
-
-Equinor – Energy company focused on oil, gas, and renewables. Approx. 21,000 employees. EBIT: 470,000 MNOK.
-Statkraft – State-owned company specializing in renewable energy. Approx. 5,000 employees. EBIT: 18,000 MNOK.
-McKinsey & Company – Global consultancy firm specializing in strategy and leadership. Approx. 30,000 employees worldwide. EBIT: Not available.`
+        text: `You are an AI assistant supporting an executive search consultant in creating a concise, two-sentence summary of a candidate based on their LinkedIn profile. Summarize the candidate's core competencies, industry experience, types of roles, and current position in an objective and precise manner, incorporating a brief mention of their current company.
+Example Output: "The candidate has over 15 years of experience in finance and technology, with leadership roles at DNB and Telenor. She is currently CFO at an international technology company and holds a master's degree in economics from NHH."`
     }
 };
 
@@ -140,13 +138,41 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    chrome.storage.sync.get(["apiKey", "systemPrompts", "activePrompt"], function (data) {
+    // Add API provider change handler
+    const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
+    const openaiModelGroup = document.getElementById("openaiModelGroup");
+    const apiKeyLink = document.getElementById("apiKeyLink");
+
+    apiProviderRadios.forEach(radio => {
+        radio.addEventListener("change", function() {
+            const isOpenAI = this.value === "openai";
+            openaiModelGroup.style.display = isOpenAI ? "block" : "none";
+            apiKeyLink.href = isOpenAI 
+                ? "https://platform.openai.com/api-keys"
+                : "https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw..";
+        });
+    });
+
+    // Update storage handling to include API provider and OpenAI model
+    chrome.storage.sync.get(["apiKey", "apiProvider", "openaiModel", "systemPrompts", "activePrompt"], function (data) {
         const apiKeyInput = document.getElementById("apiKey");
+        const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
+        const openaiModelSelect = document.getElementById("openaiModel");
         const promptTextArea = document.getElementById("systemPromptText");
         const languageSelect = document.getElementById("languageSelect");
 
         if (data.apiKey) {
             apiKeyInput.value = data.apiKey;
+        }
+        if (data.apiProvider) {
+            const selectedRadio = document.querySelector(`input[name="apiProvider"][value="${data.apiProvider}"]`);
+            if (selectedRadio) {
+                selectedRadio.checked = true;
+                openaiModelGroup.style.display = data.apiProvider === "openai" ? "block" : "none";
+            }
+        }
+        if (data.openaiModel) {
+            openaiModelSelect.value = data.openaiModel;
         }
         systemPrompts = data.systemPrompts || defaultPrompts;
         activePrompt = data.activePrompt || "prompt1";
@@ -165,6 +191,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Save the initial state for change detection.
         initialState = {
             apiKey: data.apiKey || "",
+            apiProvider: data.apiProvider || "",
+            openaiModel: data.openaiModel || "",
             activePrompt: activePrompt,
             systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
         };
@@ -177,8 +205,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("languageSelect").addEventListener("change", checkForChanges);
     document.getElementById("systemPromptText").addEventListener("input", checkForChanges);
 
+    // Update save handler to include API provider and OpenAI model
     document.getElementById("save").addEventListener("click", function () {
         const apiKeyInput = document.getElementById("apiKey");
+        const selectedApiProvider = document.querySelector('input[name="apiProvider"]:checked').value;
+        const openaiModelSelect = document.getElementById("openaiModel");
         const promptTextArea = document.getElementById("systemPromptText");
         const languageSelect = document.getElementById("languageSelect");
 
@@ -189,9 +220,12 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         const apiKey = apiKeyInput.value.trim();
+        const openaiModel = openaiModelSelect.value;
 
         chrome.storage.sync.set({
             apiKey: apiKey,
+            apiProvider: selectedApiProvider,
+            openaiModel: openaiModel,
             systemPrompts: systemPrompts,
             activePrompt: activePrompt,
         }, function () {
@@ -202,6 +236,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 showSnackbar("Settings saved successfully");
                 initialState = {
                     apiKey: apiKey,
+                    apiProvider: selectedApiProvider,
+                    openaiModel: openaiModel,
                     activePrompt: activePrompt,
                     systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
                 };
@@ -274,48 +310,43 @@ function updatePromptTabUI() {
     });
 }
 
+// Update change detection to include API provider and OpenAI model
 function checkForChanges() {
-    const apiKey = document.getElementById("apiKey").value.trim();
-    const promptText = document.getElementById("systemPromptText").value;
+    const apiKeyInput = document.getElementById("apiKey");
+    const selectedApiProvider = document.querySelector('input[name="apiProvider"]:checked').value;
+    const openaiModelSelect = document.getElementById("openaiModel");
+    const promptTextArea = document.getElementById("systemPromptText");
     const languageSelect = document.getElementById("languageSelect");
 
-    systemPrompts[activePrompt] = {
-        language: languageSelect.value,
-        text: promptText,
-        name: systemPrompts[activePrompt].name || defaultPrompts[activePrompt].name || activePrompt,
+    const currentState = {
+        apiKey: apiKeyInput.value.trim(),
+        apiProvider: selectedApiProvider,
+        openaiModel: openaiModelSelect.value,
+        activePrompt: activePrompt,
+        systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
     };
 
-    const systemPromptsChanged =
-        JSON.stringify(systemPrompts) !== JSON.stringify(initialState.systemPrompts);
-    const apiKeyChanged = apiKey !== initialState.apiKey;
-    const activePromptChanged = activePrompt !== initialState.activePrompt;
-
-    const changes = apiKeyChanged || activePromptChanged || systemPromptsChanged;
-
-    const saveButton = document.getElementById("save");
-    if (changes) {
-        saveButton.disabled = false;
-        saveButton.classList.add("active");
-    } else {
-        saveButton.disabled = true;
-        saveButton.classList.remove("active");
-    }
+    const hasChanges = JSON.stringify(currentState) !== JSON.stringify(initialState);
+    document.getElementById("save").disabled = !hasChanges;
 }
 
-function enableTabEdit(tabButton) {
+function editTabName(tabButton) {
     const labelSpan = tabButton.querySelector(".prompt-label");
     if (!labelSpan) return;
     const currentName = labelSpan.textContent;
+    
     const input = document.createElement("input");
     input.type = "text";
     input.value = currentName;
     input.className = "prompt-edit-input";
     tabButton.replaceChild(input, labelSpan);
+    tabButton.classList.add('editing');
     input.focus();
 
     input.addEventListener("blur", function () {
         finishEditing(tabButton, input.value);
     });
+
     input.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
             input.blur();
@@ -330,19 +361,13 @@ function finishEditing(tabButton, newName) {
     const input = tabButton.querySelector("input.prompt-edit-input");
     if (input) {
         tabButton.replaceChild(newLabel, input);
+        tabButton.classList.remove('editing');
     }
     const key = tabButton.dataset.prompt;
     if (systemPrompts[key]) {
         systemPrompts[key].name = newName;
+        checkForChanges();
     }
-    chrome.storage.sync.set({ systemPrompts: systemPrompts }, function () {
-        if (chrome.runtime.lastError) {
-            console.error("Error updating prompt name:", chrome.runtime.lastError);
-        } else {
-            console.log("Prompt name updated in storage");
-        }
-    });
-    checkForChanges();
 }
 
 function attachEditIconListener(tabButton) {
@@ -350,7 +375,7 @@ function attachEditIconListener(tabButton) {
     if (editIcon) {
         editIcon.addEventListener("click", function (e) {
             e.stopPropagation();
-            enableTabEdit(tabButton);
+            editTabName(tabButton);
         });
     }
 }

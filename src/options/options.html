@@ -26,18 +26,45 @@
     <div class="settings-container">
         <h2>Settings</h2>
 
-        <!-- Gemini API Key input -->
+        <!-- API Provider Selection -->
         <div class="form-group">
-            <label for="apiKey">Gemini API Key</label>
-            <input type="text" id="apiKey" class="form-control" placeholder="Enter your Gemini API Key" />
+            <label>API Provider</label>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="apiProvider" value="gemini" checked>
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">Google Gemini</span>
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="apiProvider" value="openai">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">OpenAI</span>
+                </label>
+            </div>
         </div>
 
-        <!-- Link for Gemini API Key info -->
+        <!-- OpenAI Model Selection -->
+        <div class="form-group" id="openaiModelGroup" style="display: none;">
+            <label for="openaiModel">OpenAI Model</label>
+            <select id="openaiModel" class="form-control">
+                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="o1-mini">o1-mini</option>
+                <option value="o3-mini">o3-mini</option>
+            </select>
+        </div>
+
+        <!-- API Key input -->
         <div class="form-group">
-            <label>Need a Gemini API Key?</label>
-            <a href="https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw.."
-                target="_blank">
-                Click here to get one for free
+            <label for="apiKey">API Key</label>
+            <input type="text" id="apiKey" class="form-control" placeholder="Enter your API Key" />
+        </div>
+
+        <!-- Link for API Key info -->
+        <div class="form-group">
+            <label>Need an API Key?</label>
+            <a href="#" id="apiKeyLink" target="_blank">
+                Click here to get one
             </a>
         </div>
 
