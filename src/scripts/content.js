@@ -210,7 +210,7 @@ function isInBrowsemapSection(block) {
     const headingEl = section.querySelector('h2.pvs-header__title');
     if (!headingEl) return false;
 
-    // 3) Convert heading text to lowercase and check if it’s some "people also viewed" or similar
+    // 3) Convert heading text to lowercase and check if it's some "people also viewed" or similar
     const headingText = headingEl.textContent.trim().toLowerCase();
     if (headingText.includes('flere profiler') || headingText.includes('people also viewed')) {
         return true;
@@ -322,6 +322,72 @@ function parsePosition(positionBlock, fallbackCompany) {
     return { jobTitle, company, duration, location };
 }
 
+/**
+ * Scrape education entries from the profile.
+ */
+function scrapeEducation() {
+    const educations = [];
+
+    // 1) Look for #education
+    const educationDiv = document.querySelector('#education');
+    if (!educationDiv) {
+        return educations;
+    }
+
+    const educationSection = educationDiv.closest('section.artdeco-card');
+    if (!educationSection) {
+        return educations;
+    }
+
+    // 2) Get all education blocks
+    const educationBlocks = educationSection.querySelectorAll('div[data-view-name="profile-component-entity"]');
+
+    educationBlocks.forEach((block) => {
+        const education = parseEducation(block);
+        if (education.school !== 'N/A' || education.degree !== 'N/A') {
+            educations.push(education);
+        }
+    });
+
+    return educations;
+}
+
+/**
+ * Parse a single education entry from a block.
+ */
+function parseEducation(block) {
+    let school = 'N/A';
+    let degree = 'N/A';
+    let duration = 'N/A';
+    let description = 'N/A';
+
+    // School name
+    const schoolEl = block.querySelector('div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]');
+    if (schoolEl) {
+        school = schoolEl.textContent.trim();
+    }
+
+    // Degree
+    const degreeEl = block.querySelector('span.t-14.t-normal span[aria-hidden="true"]');
+    if (degreeEl) {
+        degree = degreeEl.textContent.trim();
+    }
+
+    // Duration
+    const durationEl = block.querySelector('span.t-14.t-normal.t-black--light span[aria-hidden="true"]');
+    if (durationEl) {
+        duration = durationEl.textContent.trim();
+    }
+
+    // Description (if available)
+    const descriptionEl = block.querySelector('.pvs-entity__description span[aria-hidden="true"]');
+    if (descriptionEl) {
+        description = descriptionEl.textContent.trim();
+    }
+
+    return { school, degree, duration, description };
+}
+
 //////////////////////////////
 // 4) Page Load "Wait" Logic  //
 //////////////////////////////
@@ -379,26 +445,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 { aboutText: about, name: name, nextPageScrapeNeeded: true },
                 () => {
                     sendResponse({ status: "navigating", message: "Redirecting to full experiences page" });
-                    // Navigate away after a short delay to ensure sendResponse is sent.
                     setTimeout(() => {
                         window.location.href = seeAllLink.href;
                     }, 100);
-                    // sendResponse is called before navigation to provide status feedback.
                 }
             );
-            // Don't call sendResponse because we're navigating.
         } else {
             // Already on full experiences page (or no see-more link)
             const info = {
                 name: getProfileName(),
                 about: getAboutSection(),
-                experiences: scrapeExperiences()
+                experiences: scrapeExperiences(),
+                education: scrapeEducation()
             };
             console.log(scrapeExperiences())
             sendResponse(info);
         }
 
-        return true; // Keep the channel open for async calls if needed.
+        return true;
     }
 });
 
@@ -432,11 +496,13 @@ function doFullScrape() {
         const storedAbout = storedRes.aboutText || getAboutSection();
         const storedName = storedRes.name || getProfileName();
         const experiences = scrapeExperiences();
+        const education = scrapeEducation();
 
         const info = {
             name: storedName,
             about: storedAbout,
-            experiences
+            experiences,
+            education
         };
 
         // Reset the flag

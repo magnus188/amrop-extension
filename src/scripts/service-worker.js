@@ -127,15 +127,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.storage.sync.get(['apiKey', 'apiProvider', 'openaiModel', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
             const { apiKey, apiProvider, openaiModel, systemPrompts, activePrompt } = data;
 
+            let promptInstruction;
+            let language;
+
+            // Initialize with defaults if no systemPrompts exist
             if (!systemPrompts) {
                 chrome.storage.sync.set({
                     systemPrompts: defaultPrompts,
                     activePrompt: "prompt1"
                 });
+                promptInstruction = defaultPrompts.prompt1.text;
+                language = defaultPrompts.prompt1.language;
+            } else if (!activePrompt || !systemPrompts[activePrompt]) {
+                // If activePrompt is invalid, use prompt1
+                promptInstruction = defaultPrompts.prompt1.text;
+                language = defaultPrompts.prompt1.language;
+            } else {
+                promptInstruction = systemPrompts[activePrompt].text;
+                language = systemPrompts[activePrompt].language;
             }
-
-            promptInstruction = systemPrompts[activePrompt].text
-            language = systemPrompts[activePrompt].language
 
             if (!apiKey) {
                 sendResponse({ error: 'No API key provided. Add one in settings.' });
@@ -143,7 +153,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
 
             try {
-                if (message.resp.experiences.length == 0) {
+                if (!message.resp || !message.resp.experiences || message.resp.experiences.length === 0) {
                     throw new Error("Could not find any LinkedIn profile.");
                 }
 
