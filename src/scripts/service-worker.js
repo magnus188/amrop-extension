@@ -153,7 +153,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
 
             try {
-                if (!message.resp || !message.resp.experiences || message.resp.experiences.length === 0) {
+                if (!message.resp || (!message.resp.experiences && !message.resp.education)) {
                     throw new Error("Could not find any LinkedIn profile.");
                 }
 

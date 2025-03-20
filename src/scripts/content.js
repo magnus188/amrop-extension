@@ -326,16 +326,33 @@ function parsePosition(positionBlock, fallbackCompany) {
  * Scrape education entries from the profile.
  */
 function scrapeEducation() {
+    // Try the short-page approach first:
+    let educations = scrapeEducationShortPage();
+    if (educations && educations.length > 0) {
+        return educations;
+    }
+
+    // Otherwise, use the full-page approach.
+    educations = scrapeEducationFullPage();
+    return educations;
+}
+
+/**
+ * SHORT-PAGE APPROACH
+ */
+function scrapeEducationShortPage() {
     const educations = [];
 
     // 1) Look for #education
     const educationDiv = document.querySelector('#education');
     if (!educationDiv) {
-        return educations;
+        // No #education div found (likely already full page)
+        return educations; // empty
     }
 
     const educationSection = educationDiv.closest('section.artdeco-card');
     if (!educationSection) {
+        // No parent section found for #education
         return educations;
     }
 
@@ -353,6 +370,47 @@ function scrapeEducation() {
 }
 
 /**
+ * FULL-PAGE APPROACH
+ */
+function scrapeEducationFullPage() {
+    const educations = [];
+
+    // Grab all "profile-component-entity" blocks in the DOM
+    const allBlocks = document.querySelectorAll('div[data-view-name="profile-component-entity"]');
+
+    // Filter to top-level blocks (exclude nested, exclude "people also viewed" side sections, etc.)
+    const topLevelBlocks = [...allBlocks].filter((block) => {
+        const parent = block.parentElement?.closest('div[data-view-name="profile-component-entity"]');
+        if (parent) return false; // skip nested
+        if (isInBrowsemapSection(block)) {
+            return false; // skip 'people also viewed'
+        }
+        return hasEducationContent(block);
+    });
+
+    topLevelBlocks.forEach((block) => {
+        const education = parseEducation(block);
+        if (education.school !== 'N/A' || education.degree !== 'N/A') {
+            educations.push(education);
+        }
+    });
+
+    return educations;
+}
+
+/**
+ * Check if a block has education content.
+ */
+function hasEducationContent(block) {
+    const schoolEl = block.querySelector(`
+        div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
+        div.t-bold span[aria-hidden="true"],
+        span.t-bold[aria-hidden="true"]
+    `);
+    return !!schoolEl;
+}
+
+/**
  * Parse a single education entry from a block.
  */
 function parseEducation(block) {
@@ -362,7 +420,11 @@ function parseEducation(block) {
     let description = 'N/A';
 
     // School name
-    const schoolEl = block.querySelector('div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]');
+    const schoolEl = block.querySelector(`
+        div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"],
+        div.t-bold span[aria-hidden="true"],
+        span.t-bold[aria-hidden="true"]
+    `);
     if (schoolEl) {
         school = schoolEl.textContent.trim();
     }
@@ -435,30 +497,77 @@ function waitForExperiencesContainer(selector = '.scaffold-finite-scroll__conten
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "scrapeProfile") {
-        const seeAllLink = document.querySelector('#navigation-index-see-all-experiences');
+        const seeAllExperiencesLink = document.querySelector('#navigation-index-see-all-experiences');
+        const seeAllEducationLink = document.querySelector('#navigation-index-see-all-education');
 
-        if (seeAllLink) {
-            // Store data and navigate away
+        if (seeAllEducationLink) {
+            // Handle education navigation first
             const about = getAboutSection();
             const name = getProfileName();
+            const education = scrapeEducation();
+            
+            // Store the navigation sequence and initial data
             chrome.storage.local.set(
-                { aboutText: about, name: name, nextPageScrapeNeeded: true },
+                { 
+                    aboutText: about, 
+                    name: name, 
+                    education: education,
+                    nextPageScrapeNeeded: true,
+                    navigationSequence: [{
+                        type: 'education',
+                        href: seeAllEducationLink.href
+                    }],
+                    currentNavigationIndex: 0
+                },
                 () => {
-                    sendResponse({ status: "navigating", message: "Redirecting to full experiences page" });
-                    setTimeout(() => {
-                        window.location.href = seeAllLink.href;
-                    }, 100);
+                    // Send response first
+                    sendResponse({ 
+                        status: "navigating", 
+                        message: "Redirecting to education page" 
+                    });
+                    
+                    // Navigate immediately after sending response
+                    window.location.href = seeAllEducationLink.href;
+                }
+            );
+        } else if (seeAllExperiencesLink) {
+            // Handle experience navigation
+            const about = getAboutSection();
+            const name = getProfileName();
+            const education = scrapeEducation();
+            
+            // Store the navigation sequence and initial data
+            chrome.storage.local.set(
+                { 
+                    aboutText: about, 
+                    name: name, 
+                    education: education,
+                    nextPageScrapeNeeded: true,
+                    navigationSequence: [{
+                        type: 'experiences',
+                        href: seeAllExperiencesLink.href
+                    }],
+                    currentNavigationIndex: 0
+                },
+                () => {
+                    // Send response first
+                    sendResponse({ 
+                        status: "navigating", 
+                        message: "Redirecting to experiences page" 
+                    });
+                    
+                    // Navigate immediately after sending response
+                    window.location.href = seeAllExperiencesLink.href;
                 }
             );
         } else {
-            // Already on full experiences page (or no see-more link)
+            // Already on full page (or no see-more links)
             const info = {
                 name: getProfileName(),
                 about: getAboutSection(),
                 experiences: scrapeExperiences(),
                 education: scrapeEducation()
             };
-            console.log(scrapeExperiences())
             sendResponse(info);
         }
 
@@ -474,41 +583,156 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  *  On load of any LinkedIn page, check if we need a "full experiences" scrape.
  *  If yes, wait for container, then scrape, then reset flag, then send "SCRAPE_COMPLETE".
  */
-chrome.storage.local.get(['nextPageScrapeNeeded'], (res) => {
-    if (res.nextPageScrapeNeeded) {
+chrome.storage.local.get(['nextPageScrapeNeeded', 'navigationSequence', 'currentNavigationIndex'], (res) => {
+    if (res.nextPageScrapeNeeded && res.navigationSequence && res.currentNavigationIndex !== undefined) {
         // Check if the experiences container is already there:
         let container = document.querySelector('.scaffold-finite-scroll__content');
         if (container) {
-            doFullScrape();
+            doFullScrape(res.navigationSequence, res.currentNavigationIndex);
         } else {
             waitForExperiencesContainer('.scaffold-finite-scroll__content', 2000).then(() => {
-                doFullScrape();
+                doFullScrape(res.navigationSequence, res.currentNavigationIndex);
             });
         }
     }
 });
 
 /**
+ * Check if we're on a valid LinkedIn profile page
+ */
+function isValidLinkedInProfile() {
+    const url = window.location.href;
+    console.log('Checking URL:', url);
+    // Check if we're on a LinkedIn profile page or a detail page
+    const isValid = url.includes('linkedin.com/in/') && 
+           (url.includes('/details/education/') || url.includes('/details/experience/') || !url.includes('/details/'));
+    console.log('Is valid profile:', isValid);
+    return isValid;
+}
+
+/**
  * Helper for the "on load" scenario
  */
-function doFullScrape() {
-    chrome.storage.local.get(['aboutText', 'name'], (storedRes) => {
+function doFullScrape(navigationSequence, currentIndex) {
+    console.log('Starting full scrape with sequence:', navigationSequence, 'current index:', currentIndex);
+    // First check if we're on a valid LinkedIn profile page
+    if (!isValidLinkedInProfile()) {
+        console.error('Not on a valid LinkedIn profile page');
+        chrome.storage.local.set({ 
+            nextPageScrapeNeeded: false,
+            navigationSequence: null,
+            currentNavigationIndex: null,
+            experiences: null,
+            education: null
+        }, () => {
+            chrome.runtime.sendMessage({ 
+                type: 'SCRAPE_COMPLETE', 
+                error: 'Could not find any LinkedIn profile. Please make sure you are on a LinkedIn profile page.'
+            });
+        });
+        return;
+    }
+
+    console.log('Profile is valid, proceeding with scrape');
+    console.log('Current page type:', navigationSequence[currentIndex].type);
+
+    chrome.storage.local.get(['aboutText', 'name', 'education', 'experiences'], (storedRes) => {
+        console.log('Retrieved stored data:', storedRes);
         const storedAbout = storedRes.aboutText || getAboutSection();
         const storedName = storedRes.name || getProfileName();
-        const experiences = scrapeExperiences();
-        const education = scrapeEducation();
+        const storedEducation = storedRes.education || [];
+        const storedExperiences = storedRes.experiences || [];
+        
+        let experiences = storedExperiences;
+        let education = storedEducation;
 
-        const info = {
-            name: storedName,
-            about: storedAbout,
-            experiences,
-            education
-        };
+        // Scrape based on current page type
+        const currentPage = navigationSequence[currentIndex];
+        console.log('Scraping page type:', currentPage.type);
+        
+        try {
+            if (currentPage.type === 'experiences') {
+                console.log('Scraping experiences...');
+                experiences = scrapeExperiences();
+                console.log('Scraped experiences:', experiences);
+            } else if (currentPage.type === 'education') {
+                console.log('Scraping education...');
+                education = scrapeEducation();
+                console.log('Scraped education:', education);
+            }
 
-        // Reset the flag
-        chrome.storage.local.set({ nextPageScrapeNeeded: false }, () => {
-            // Send final data back to extension (popup or background)
-            chrome.runtime.sendMessage({ type: 'SCRAPE_COMPLETE', info });
-        });
+            // Check if we need to navigate to the next page
+            if (currentIndex < navigationSequence.length - 1) {
+                console.log('More pages to scrape, navigating to next page');
+                // Store current data and navigate to next page
+                chrome.storage.local.set({
+                    experiences: experiences,
+                    education: education,
+                    currentNavigationIndex: currentIndex + 1
+                }, () => {
+                    // Send progress message before navigation
+                    chrome.runtime.sendMessage({ 
+                        type: 'SCRAPE_PROGRESS', 
+                        info: {
+                            name: storedName,
+                            about: storedAbout,
+                            experiences,
+                            education
+                        },
+                        currentIndex,
+                        totalPages: navigationSequence.length
+                    });
+                    
+                    // Navigate after a short delay to ensure message is sent
+                    setTimeout(() => {
+                        window.location.href = navigationSequence[currentIndex + 1].href;
+                    }, 500);
+                });
+            } else {
+                console.log('No more pages to scrape, sending complete data');
+                // We're done with all pages, send complete data
+                const info = {
+                    name: storedName,
+                    about: storedAbout,
+                    experiences,
+                    education
+                };
+
+                // Send final data back to extension (popup or background)
+                chrome.runtime.sendMessage({ 
+                    type: 'SCRAPE_COMPLETE', 
+                    info,
+                    error: null 
+                }, (response) => {
+                    // Only navigate back after the message has been processed
+                    setTimeout(() => {
+                        chrome.storage.local.set({ 
+                            nextPageScrapeNeeded: false,
+                            navigationSequence: null,
+                            currentNavigationIndex: null,
+                            experiences: null,
+                            education: null
+                        }, () => {
+                            const mainProfileUrl = window.location.href.split('/details/')[0];
+                            window.location.href = mainProfileUrl;
+                        });
+                    }, 1000); // Increased delay to ensure message is processed
+                });
+            }
+        } catch (error) {
+            console.error('Error during scraping:', error);
+            chrome.storage.local.set({ 
+                nextPageScrapeNeeded: false,
+                navigationSequence: null,
+                currentNavigationIndex: null,
+                experiences: null,
+                education: null
+            }, () => {
+                chrome.runtime.sendMessage({ 
+                    type: 'SCRAPE_COMPLETE', 
+                    error: 'An error occurred while scraping the profile: ' + error.message 
+                });
+            });
+        }
     });
 }
