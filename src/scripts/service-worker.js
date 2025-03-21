@@ -124,27 +124,32 @@ input:
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SEND_PROMPT') {
-        chrome.storage.sync.get(['geminiApiKey', 'openaiApiKey', 'apiProvider', 'openaiModel', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
-            const { geminiApiKey, openaiApiKey, apiProvider, openaiModel, systemPrompts, activePrompt } = data;
+        chrome.storage.sync.get(['geminiApiKey', 'openaiApiKey', 'apiProvider', 'openaiModel', 'customPrompts', 'activePrompt'], async (data) => {
+            const { geminiApiKey, openaiApiKey, apiProvider, openaiModel, activePrompt } = data;
 
             let promptInstruction;
             let language;
 
-            // Initialize with defaults if no systemPrompts exist
-            if (!systemPrompts) {
+            // Initialize with defaults if no custom prompts exist
+            if (!data.customPrompts) {
                 chrome.storage.sync.set({
-                    systemPrompts: defaultPrompts,
+                    customPrompts: {},
                     activePrompt: "prompt1"
                 });
+                console.log('No custom prompts found, using default prompt1');
+                
                 promptInstruction = defaultPrompts.prompt1.text;
                 language = defaultPrompts.prompt1.language;
-            } else if (!activePrompt || !systemPrompts[activePrompt]) {
-                // If activePrompt is invalid, use prompt1
+            } else if (!activePrompt || !data.customPrompts[activePrompt]) {
+                console.log('Active prompt is invalid or not found in custom prompts, using default prompt1');
+                // If activePrompt is invalid or not found in custom prompts, use default prompt1
                 promptInstruction = defaultPrompts.prompt1.text;
                 language = defaultPrompts.prompt1.language;
             } else {
-                promptInstruction = systemPrompts[activePrompt].text;
-                language = systemPrompts[activePrompt].language;
+                // Use the compressed format
+                const compressedPrompt = data.customPrompts[activePrompt];
+                promptInstruction = compressedPrompt.t;  // text is stored as 't'
+                language = compressedPrompt.l;          // language is stored as 'l'
             }
 
             if (!geminiApiKey && !openaiApiKey) {
@@ -168,11 +173,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
 
                 let result;
+                console.log(promptInstruction);
+                
                 if (apiProvider === 'openai') {
                     result = await fetchOpenAI(message.resp, openaiApiKey, promptInstruction, language, openaiModel);
                 } else {
                     result = await fetchGemini(message.resp, geminiApiKey, promptInstruction, language);
                 }
+                console.log(result);
+                
                 sendResponse({ result });
             } catch (error) {
                 sendResponse({ error: error.message });

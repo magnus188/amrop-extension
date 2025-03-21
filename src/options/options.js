@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById("resetAll").addEventListener("click", function () {
-        if (confirm("Are you sure you want to reset all settings to factory defaults? This will not affect your API keys.")) {
+        if (confirm("Are you sure you want to reset all propmt settings to factory defaults? This will not affect your API keys.")) {
             // Get current API keys
             chrome.storage.sync.get(['geminiApiKey', 'openaiApiKey', 'apiProvider'], function(data) {
                 const currentGeminiApiKey = data.geminiApiKey;
@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Update storage handling to include API provider and OpenAI model
-    chrome.storage.sync.get(["geminiApiKey", "openaiApiKey", "apiProvider", "openaiModel", "systemPrompts", "activePrompt"], function (data) {
+    chrome.storage.sync.get(["geminiApiKey", "openaiApiKey", "apiProvider", "openaiModel", "customPrompts", "activePrompt"], function (data) {
         const geminiApiKeyInput = document.getElementById("geminiApiKey");
         const openaiApiKeyInput = document.getElementById("openaiApiKey");
         const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
@@ -227,12 +227,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // Initialize systemPrompts with defaults first
         systemPrompts = JSON.parse(JSON.stringify(defaultPrompts));
         
-        // If we have stored prompts, merge them with defaults
-        if (data.systemPrompts) {
-            Object.keys(data.systemPrompts).forEach(key => {
-                if (data.systemPrompts[key] && !data.systemPrompts[key].isDefault) {
-                    systemPrompts[key] = data.systemPrompts[key];
-                }
+        // If we have stored custom prompts, decompress and merge them
+        if (data.customPrompts) {
+            Object.keys(data.customPrompts).forEach(key => {
+                const compressedPrompt = data.customPrompts[key];
+                systemPrompts[key] = {
+                    name: compressedPrompt.n,
+                    text: compressedPrompt.t,
+                    language: compressedPrompt.l
+                };
             });
         }
 
@@ -294,40 +297,52 @@ document.addEventListener("DOMContentLoaded", function () {
         // Create a copy of prompts to store, excluding default prompts
         const promptsToStore = {};
         Object.keys(systemPrompts).forEach(key => {
-            if (!systemPrompts[key].isDefault) {
+            if (!defaultPrompts.hasOwnProperty(key) || 
+                (systemPrompts[key].text !== defaultPrompts[key]?.text || 
+                 systemPrompts[key].language !== defaultPrompts[key]?.language)) {
                 promptsToStore[key] = systemPrompts[key];
             }
         });
 
-        // Store only non-default prompts
-        chrome.storage.sync.set({
-            geminiApiKey: geminiApiKey,
-            openaiApiKey: openaiApiKey,
+        // Compress the prompts data
+        const compressedPrompts = {};
+        Object.keys(promptsToStore).forEach(key => {
+            compressedPrompts[key] = {
+                n: promptsToStore[key].name,
+                t: promptsToStore[key].text,
+                l: promptsToStore[key].language
+            };
+        });
+
+        // Save all settings at once
+        const settings = {
+            geminiApiKey,
+            openaiApiKey,
             apiProvider: selectedApiProvider,
-            openaiModel: openaiModel,
-            systemPrompts: promptsToStore,
-            activePrompt: activePrompt,
-        }, function () {
+            openaiModel,
+            activePrompt,
+            customPrompts: compressedPrompts
+        };
+
+        chrome.storage.sync.set(settings, function() {
             if (chrome.runtime.lastError) {
                 console.error("Error saving settings:", chrome.runtime.lastError);
-                if (chrome.runtime.lastError.message.includes("QUOTA_BYTES_PER_ITEM")) {
-                    showSnackbar("Error: The prompt is too large to save. Please make it shorter or split it into multiple prompts.");
-                } else {
-                    showSnackbar(`Error saving settings: ${chrome.runtime.lastError.message || 'Unknown error'}`);
-                }
-            } else {
-                showSnackbar("Settings saved successfully");
-                // Update initial state to match current state
-                initialState = {
-                    geminiApiKey: geminiApiKey,
-                    openaiApiKey: openaiApiKey,
-                    apiProvider: selectedApiProvider,
-                    openaiModel: openaiModel,
-                    activePrompt: activePrompt,
-                    systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
-                };
-                checkForChanges();
+                showSnackbar(`Error saving settings: ${chrome.runtime.lastError.message || 'Unknown error'}`);
+                return;
             }
+
+            // Update initial state to match current state
+            initialState = {
+                geminiApiKey,
+                openaiApiKey,
+                apiProvider: selectedApiProvider,
+                openaiModel,
+                activePrompt,
+                systemPrompts: JSON.parse(JSON.stringify(systemPrompts))
+            };
+
+            showSnackbar("Settings saved successfully");
+            checkForChanges();
         });
     });
 
@@ -403,18 +418,59 @@ function checkForChanges() {
     const promptTextArea = document.getElementById("systemPromptText");
     const languageSelect = document.getElementById("languageSelect");
 
-    const currentState = {
-        geminiApiKey: geminiApiKeyInput.value.trim(),
-        openaiApiKey: openaiApiKeyInput.value.trim(),
-        apiProvider: selectedApiProvider,
-        openaiModel: openaiModelSelect.value,
-        activePrompt: activePrompt,
-        systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
-    };
+    // Update current prompt in systemPrompts
+    if (systemPrompts[activePrompt]) {
+        systemPrompts[activePrompt].text = promptTextArea.value;
+        systemPrompts[activePrompt].language = languageSelect.value;
+    }
 
-    const hasChanges = JSON.stringify(currentState) !== JSON.stringify(initialState);
+    // Compare current values with initial state
+    const hasApiKeyChanges = 
+        geminiApiKeyInput.value.trim() !== initialState.geminiApiKey ||
+        openaiApiKeyInput.value.trim() !== initialState.openaiApiKey;
+
+    const hasProviderChanges = 
+        selectedApiProvider !== initialState.apiProvider ||
+        openaiModelSelect.value !== initialState.openaiModel;
+
+    // Add activePrompt change detection
+    const hasActivePromptChange = activePrompt !== initialState.activePrompt;
+
+    const hasPromptChanges = Object.keys(systemPrompts).some(key => {
+        const initial = initialState.systemPrompts[key];
+        const current = systemPrompts[key];
+        return !initial || !current ||
+            initial.text !== current.text ||
+            initial.language !== current.language ||
+            initial.name !== current.name;
+    });
+
+    const hasChanges = hasApiKeyChanges || hasProviderChanges || hasPromptChanges || hasActivePromptChange;
     document.getElementById("save").disabled = !hasChanges;
 }
+
+// Add event listeners for all changes
+document.getElementById("systemPromptText").addEventListener("input", function() {
+    if (systemPrompts[activePrompt]) {
+        systemPrompts[activePrompt].text = this.value;
+        checkForChanges();
+    }
+});
+
+document.getElementById("languageSelect").addEventListener("change", function() {
+    if (systemPrompts[activePrompt]) {
+        systemPrompts[activePrompt].language = this.value;
+        checkForChanges();
+    }
+});
+
+// Add event listener for API provider changes
+document.querySelectorAll('input[name="apiProvider"]').forEach(radio => {
+    radio.addEventListener("change", checkForChanges);
+});
+
+// Add event listener for OpenAI model changes
+document.getElementById("openaiModel").addEventListener("change", checkForChanges);
 
 function editTabName(tabButton) {
     const labelSpan = tabButton.querySelector(".prompt-label");
@@ -512,18 +568,22 @@ function populatePromptTabs() {
             }
             
             // Switch active prompt
+            const previousActivePrompt = activePrompt;
             activePrompt = button.dataset.prompt;
-            updatePromptTabUI();
-
-            // Update text area and language select with new prompt data
-            promptTextArea.value = systemPrompts[activePrompt].text || "";
-            languageSelect.value = systemPrompts[activePrompt].language || "English";
             
-            // Show/hide restore button based on whether it's a default prompt
-            restoreDefaultPromptButton.style.display = 
-                defaultPrompts.hasOwnProperty(activePrompt) ? "inline-block" : "none";
-            
-            checkForChanges();
+            // Only trigger changes if we actually switched to a different prompt
+            if (previousActivePrompt !== activePrompt) {
+                updatePromptTabUI();
+                // Update text area and language select with new prompt data
+                promptTextArea.value = systemPrompts[activePrompt].text || "";
+                languageSelect.value = systemPrompts[activePrompt].language || "English";
+                
+                // Show/hide restore button based on whether it's a default prompt
+                restoreDefaultPromptButton.style.display = 
+                    defaultPrompts.hasOwnProperty(activePrompt) ? "inline-block" : "none";
+                
+                checkForChanges();
+            }
         });
 
         // Attach the edit and delete listeners
