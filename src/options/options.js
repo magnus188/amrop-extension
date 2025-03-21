@@ -143,8 +143,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("resetAll").addEventListener("click", function () {
         if (confirm("Are you sure you want to reset all settings to factory defaults? This will not affect your API keys.")) {
             // Get current API keys
-            chrome.storage.sync.get(['apiKey', 'apiProvider'], function(data) {
-                const currentApiKey = data.apiKey;
+            chrome.storage.sync.get(['geminiApiKey', 'openaiApiKey', 'apiProvider'], function(data) {
+                const currentGeminiApiKey = data.geminiApiKey;
+                const currentOpenaiApiKey = data.openaiApiKey;
                 const currentApiProvider = data.apiProvider;
 
                 // Reset systemPrompts to default
@@ -178,12 +179,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add API provider change handler
     const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
     const openaiModelGroup = document.getElementById("openaiModelGroup");
+    const openaiApiKeyGroup = document.getElementById("openaiApiKeyGroup");
+    const geminiApiKeyGroup = document.getElementById("geminiApiKeyGroup");
     const apiKeyLink = document.getElementById("apiKeyLink");
 
     apiProviderRadios.forEach(radio => {
         radio.addEventListener("change", function() {
             const isOpenAI = this.value === "openai";
             openaiModelGroup.style.display = isOpenAI ? "block" : "none";
+            openaiApiKeyGroup.style.display = isOpenAI ? "block" : "none";
+            geminiApiKeyGroup.style.display = isOpenAI ? "none" : "block";
             apiKeyLink.href = isOpenAI 
                 ? "https://platform.openai.com/api-keys"
                 : "https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw..";
@@ -191,21 +196,28 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Update storage handling to include API provider and OpenAI model
-    chrome.storage.sync.get(["apiKey", "apiProvider", "openaiModel", "systemPrompts", "activePrompt"], function (data) {
-        const apiKeyInput = document.getElementById("apiKey");
+    chrome.storage.sync.get(["geminiApiKey", "openaiApiKey", "apiProvider", "openaiModel", "systemPrompts", "activePrompt"], function (data) {
+        const geminiApiKeyInput = document.getElementById("geminiApiKey");
+        const openaiApiKeyInput = document.getElementById("openaiApiKey");
         const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
         const openaiModelSelect = document.getElementById("openaiModel");
         const promptTextArea = document.getElementById("systemPromptText");
         const languageSelect = document.getElementById("languageSelect");
 
-        if (data.apiKey) {
-            apiKeyInput.value = data.apiKey;
+        if (data.geminiApiKey) {
+            geminiApiKeyInput.value = data.geminiApiKey;
+        }
+        if (data.openaiApiKey) {
+            openaiApiKeyInput.value = data.openaiApiKey;
         }
         if (data.apiProvider) {
             const selectedRadio = document.querySelector(`input[name="apiProvider"][value="${data.apiProvider}"]`);
             if (selectedRadio) {
                 selectedRadio.checked = true;
-                openaiModelGroup.style.display = data.apiProvider === "openai" ? "block" : "none";
+                const isOpenAI = data.apiProvider === "openai";
+                openaiModelGroup.style.display = isOpenAI ? "block" : "none";
+                openaiApiKeyGroup.style.display = isOpenAI ? "block" : "none";
+                geminiApiKeyGroup.style.display = isOpenAI ? "none" : "block";
             }
         }
         if (data.openaiModel) {
@@ -239,7 +251,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Save the initial state for change detection
         initialState = {
-            apiKey: data.apiKey || "",
+            geminiApiKey: data.geminiApiKey || "",
+            openaiApiKey: data.openaiApiKey || "",
             apiProvider: data.apiProvider || "",
             openaiModel: data.openaiModel || "",
             activePrompt: activePrompt,
@@ -250,32 +263,19 @@ document.addEventListener("DOMContentLoaded", function () {
         populatePromptTabs();
     });
 
-    // Add event listener for prompt text changes
-    document.getElementById("systemPromptText").addEventListener("input", function() {
-        // Update the current prompt in systemPrompts
-        if (systemPrompts[activePrompt]) {
-            systemPrompts[activePrompt].text = this.value;
-            checkForChanges();
-        }
+    // Add event listeners for API key changes
+    document.getElementById("geminiApiKey").addEventListener("input", function() {
+        checkForChanges();
     });
 
-    // Add event listener for language changes
-    document.getElementById("languageSelect").addEventListener("change", function() {
-        // Update the current prompt in systemPrompts
-        if (systemPrompts[activePrompt]) {
-            systemPrompts[activePrompt].language = this.value;
-            checkForChanges();
-        }
-    });
-
-    // Add event listener for API key changes
-    document.getElementById("apiKey").addEventListener("input", function() {
+    document.getElementById("openaiApiKey").addEventListener("input", function() {
         checkForChanges();
     });
 
     // Update save handler to store only non-default prompts
     document.getElementById("save").addEventListener("click", function () {
-        const apiKeyInput = document.getElementById("apiKey");
+        const geminiApiKeyInput = document.getElementById("geminiApiKey");
+        const openaiApiKeyInput = document.getElementById("openaiApiKey");
         const selectedApiProvider = document.querySelector('input[name="apiProvider"]:checked').value;
         const openaiModelSelect = document.getElementById("openaiModel");
         const promptTextArea = document.getElementById("systemPromptText");
@@ -287,7 +287,8 @@ document.addEventListener("DOMContentLoaded", function () {
             systemPrompts[activePrompt].language = languageSelect.value;
         }
 
-        const apiKey = apiKeyInput.value.trim();
+        const geminiApiKey = geminiApiKeyInput.value.trim();
+        const openaiApiKey = openaiApiKeyInput.value.trim();
         const openaiModel = openaiModelSelect.value;
 
         // Create a copy of prompts to store, excluding default prompts
@@ -300,7 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Store only non-default prompts
         chrome.storage.sync.set({
-            apiKey: apiKey,
+            geminiApiKey: geminiApiKey,
+            openaiApiKey: openaiApiKey,
             apiProvider: selectedApiProvider,
             openaiModel: openaiModel,
             systemPrompts: promptsToStore,
@@ -317,7 +319,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 showSnackbar("Settings saved successfully");
                 // Update initial state to match current state
                 initialState = {
-                    apiKey: apiKey,
+                    geminiApiKey: geminiApiKey,
+                    openaiApiKey: openaiApiKey,
                     apiProvider: selectedApiProvider,
                     openaiModel: openaiModel,
                     activePrompt: activePrompt,
@@ -393,14 +396,16 @@ function updatePromptTabUI() {
 
 // Update change detection to include API provider and OpenAI model
 function checkForChanges() {
-    const apiKeyInput = document.getElementById("apiKey");
+    const geminiApiKeyInput = document.getElementById("geminiApiKey");
+    const openaiApiKeyInput = document.getElementById("openaiApiKey");
     const selectedApiProvider = document.querySelector('input[name="apiProvider"]:checked').value;
     const openaiModelSelect = document.getElementById("openaiModel");
     const promptTextArea = document.getElementById("systemPromptText");
     const languageSelect = document.getElementById("languageSelect");
 
     const currentState = {
-        apiKey: apiKeyInput.value.trim(),
+        geminiApiKey: geminiApiKeyInput.value.trim(),
+        openaiApiKey: openaiApiKeyInput.value.trim(),
         apiProvider: selectedApiProvider,
         openaiModel: openaiModelSelect.value,
         activePrompt: activePrompt,

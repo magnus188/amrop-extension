@@ -42,22 +42,24 @@
             </div>
         </div>
 
-       
+        <!-- Gemini API Key input -->
+        <div class="form-group" id="geminiApiKeyGroup">
+            <label for="geminiApiKey">Gemini API Key</label>
+            <input type="text" id="geminiApiKey" class="form-control" placeholder="Enter your Gemini API Key" />
+        </div>
 
-        <!-- API Key input -->
-        <div class="form-group">
-            <label for="apiKey">API Key</label>
-            <input type="text" id="apiKey" class="form-control" placeholder="Enter your API Key" />
+        <!-- OpenAI API Key input -->
+        <div class="form-group" id="openaiApiKeyGroup" style="display: none;">
+            <label for="openaiApiKey">OpenAI API Key</label>
+            <input type="text" id="openaiApiKey" class="form-control" placeholder="Enter your OpenAI API Key" />
         </div>
 
         <!-- OpenAI Model Selection -->
         <div class="form-group" id="openaiModelGroup" style="display: none;">
             <label for="openaiModel">OpenAI Model</label>
             <select id="openaiModel" class="form-control">
-                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                 <option value="gpt-4o">GPT-4o</option>
-                <option value="o1-mini">o1-mini</option>
-                <option value="o3-mini">o3-mini</option>
             </select>
         </div>
 

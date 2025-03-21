@@ -124,8 +124,8 @@ input:
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SEND_PROMPT') {
-        chrome.storage.sync.get(['apiKey', 'apiProvider', 'openaiModel', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
-            const { apiKey, apiProvider, openaiModel, systemPrompts, activePrompt } = data;
+        chrome.storage.sync.get(['geminiApiKey', 'openaiApiKey', 'apiProvider', 'openaiModel', 'language', 'systemPrompts', 'activePrompt'], async (data) => {
+            const { geminiApiKey, openaiApiKey, apiProvider, openaiModel, systemPrompts, activePrompt } = data;
 
             let promptInstruction;
             let language;
@@ -147,8 +147,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 language = systemPrompts[activePrompt].language;
             }
 
-            if (!apiKey) {
+            if (!geminiApiKey && !openaiApiKey) {
                 sendResponse({ error: 'No API key provided. Add one in settings.' });
+                return;
+            }
+
+            if (apiProvider === 'openai' && !openaiApiKey) {
+                sendResponse({ error: 'No OpenAI API key provided. Add one in settings.' });
+                return;
+            }
+
+            if (apiProvider === 'gemini' && !geminiApiKey) {
+                sendResponse({ error: 'No Gemini API key provided. Add one in settings.' });
                 return;
             }
 
@@ -159,9 +169,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
                 let result;
                 if (apiProvider === 'openai') {
-                    result = await fetchOpenAI(message.resp, apiKey, promptInstruction, language, openaiModel);
+                    result = await fetchOpenAI(message.resp, openaiApiKey, promptInstruction, language, openaiModel);
                 } else {
-                    result = await fetchGemini(message.resp, apiKey, promptInstruction, language);
+                    result = await fetchGemini(message.resp, geminiApiKey, promptInstruction, language);
                 }
                 sendResponse({ result });
             } catch (error) {
