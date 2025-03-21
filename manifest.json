@@ -1,7 +1,7 @@
 {
   "name": "Candidate Summary",
   "description": "Candidate Summary from linkedIn profile",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "manifest_version": 3,
   "permissions": [
     "storage",
