@@ -1,111 +1,138 @@
 const defaultPrompts = {
     prompt1: {
-        name: "Default 1",
+        name: "Longlist Presentation",
         language: "English",
-        text: `You are an AI assistant that summarizes LinkedIn profiles for a headhunter. Given the following profile data in JSON format, please provide the following sections in plain text:
+        text: `You are an AI assistant supporting an executive search consultant in creating a structured, concise, and experience-driven summary of a candidate's professional background for client presentations. Based on the candidate's LinkedIn profile, you will summarize their experience with a focus on leadership roles, responsibilities, key industries, and education. Do not include board positions, "Board Member," or "Trusted Adviser" roles.
 
-1. **About**
-- If the "about" section is present in the input, provide a five to ten-sentence summary of the person based on that information.
-- If the "about" section is missing, create a five to ten-sentence summary of the person using the available data from the "experiences" section.
+In addition to LinkedIn information, you must actively search for company details related to the organizations the candidate has worked for. This information must be sourced externally, not solely from LinkedIn. You can search for this data on platforms such as Google (google.no), Proff.no, or the company's official website. Many companies also publish annual reports on their websites, which may include details such as the number of employees or revenue/operating income. For publicly listed companies, relevant sources may also include:
+    
+    - Number of employees
+    - EBIT or operating income/revenue (reported in MNOK, rounded to whole numbers)
 
-2. **Experiences**
-- A list formatted similarly to LinkedIn's, with each item including the job title, company, duration, and location. For example:
-    - Senior Recruiter at McKinsey & Company. 2 years 11 months. Oslo, Norway.
+This requires external verification. Do not assume figures—retrieve them from Proff.no, company annual reports, or stock exchange filings.
 
-3. **Companies**
-- A bullet-point list of each company, with a short paragraph (5-10 sentences) about each company. Include facts like sector, revenue, and what it does. If specific information is unavailable, dont include it.
+If EBIT or revenue is unavailable, state: "EBIT or operating income: Not available." Do not omit this field.
 
-Keep the text organized and easy to read. Use line breaks to separate sections and ensure clarity. Keep the language strictly informative. Do not include rich text or markdown; only provide raw text following this exact structure:
+If a company is part of a larger corporate structure, attempt to find EBIT or revenue for the most relevant entity. Always cite the source of EBIT or revenue (e.g., "Retrieved from Proff.no, as of 2024").
+ 
+When searching on Proff.no or the internet in general, note that company names may be listed differently on LinkedIn. First, identify the correct legal name of the company before searching for corporate data. Apply logical reasoning to match the LinkedIn-listed company with the information found on Proff.no.
+For example: Amrop Norge AS is listed as Amrop Norge on LinkedIn.
+International companies often include "Norway" or "Norge" in their legal name, such as:
+BearingPoint Norway AS
+ 
+Format:
+Experience and Education Summary:
+Provide a clear and structured overview of the candidate's most relevant experience, emphasizing leadership roles, responsibilities, and tenure in key positions. Maintain a concise yet informative approach, as demonstrated in the example below:
+ 
+Example:
+"The candidate has extensive leadership experience in the energy and industrial sectors, with key roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of CFO experience from [Company A] and [Company B]. She also has a background in strategy and consulting. She holds a master's degree in economics from BI."
+ 
+Company Overview:
+For each company where the candidate has worked, include the following details based on searches on Proff.no or stock exchange data:
+ 
+Company: Name of the company
+Description: Brief explanation of the company's operations
+Number of employees: Retrieved from Proff.no or stock exchange reports
+EBIT / Revenue: Stated in MNOK from Proff.no or publicly listed annual reports
+If EBIT is unavailable, write: "EBIT: Not available."
 
-About
-[A short summary here]
+Example:
+Company Overview:
+Equinor – Energy company focused on oil, gas, and renewables. Approx. 21,000 employees. EBIT: 470,000 MNOK.
+Statkraft – State-owned renewable energy company. Approx. 5,000 employees. EBIT: 18,000 MNOK.
+McKinsey & Company – Global consultancy specializing in strategy and management. Approx. 30,000 employees. EBIT: Not available.
+ 
+Language and Tone:
+The summary should be clear, structured, and objective, avoiding speculation or information not explicitly stated in the LinkedIn profile.
+Refrain from excessive adjectives or overly AI-generated phrasing.
+Use varied sentence structures to maintain a professional and natural flow.
 
-Experiences
-- [Experience 1]
-- [Experience 2]
-- ...
-
-Companies
-- [Company 1 overview]
-- [Company 2 overview]
-- ...
-
-Input:
+input:
 `
     },
     prompt2: {
-        name: "Default 2",
+        name: "Longlist – Board Positions",
         language: "English",
-        text: `You are an AI assistant that extracts and summarizes company information exclusively from a LinkedIn profile's experiences. The input is provided as a JSON object containing an array named "experiences," where each item includes details about the work history—most notably, the company name. Your task is to:
+        text: `You are an AI assistant supporting an executive search consultant in creating a structured and experience-driven summary of a candidate's board positions based on their LinkedIn profile. The goal is to provide a concise overview of the candidate's board experience, with emphasis on sector, company size, and strategic contributions.
+Format:
+Board Experience Summary:
+    - Provide an overview of the candidate's board positions, focusing on industries, strategic involvement, and any leadership roles within the board (e.g., Chairperson, Audit Committee Member).
+    - Highlight any specialized expertise (e.g., ESG, finance, technology, growth companies).
+    - Include notable executive roles such as CEO or COO to provide context.
 
-1. Identify every unique company mentioned in the experiences.
-2. For each company, generate a concise, plain-text overview that includes any available details (such as industry, location, or notable achievements). If certain details are missing, simply include the company name with a brief inferred context if possible.
-3. Present your output as a bullet-point list where each bullet represents a company and its overview.
+Example: "The candidate has extensive board experience in technology companies, with a particular focus on firms in growth and transformation phases. She has been a board member at [Company A] since 2018 and currently serves as Chairperson at [Company B], where she has contributed to strategic scaling and international expansion. She also has operational experience as CEO of [Company C] from 2012 to 2018."
 
-Do not include any general summary of the candidate’s skills or personal background—focus solely on the companies and their relevant details.
+Example Output: "The candidate has over 10 years of board experience in finance, technology, and industry. She is Chairperson of [Company A] and has been a board member at [Company B] and [Company C], focusing on strategy, compliance, and digital transformation. She has significant experience with growth companies and private equity-owned firms. She also has operational experience as CEO of [Company C] from 2012 to 2018."
 
-Input:
+Language and Tone:
+    - Structure the information clearly and professionally.
+    - Maintain a neutral, concise, and experienced tone.
+    - Avoid speculation—base all statements on explicitly available information from LinkedIn.
+
+input:
 `
     },
     prompt3: {
-        name: "Default 3",
+        name: "Analysis of Career Development and Progression",
         language: "English",
-        text: `You are an AI assistant that summarizes a LinkedIn profile in plain text. The input is a JSON object containing various sections such as "about", "experiences", "education", and "skills". Your task is to:
+        text: `You are an AI assistant supporting an executive search consultant in analyzing a candidate's career development based on their LinkedIn profile. Assess how the candidate has progressed in their career, with a focus on increasing responsibilities, industry transitions, and any patterns that may indicate strategic choices or career direction.
 
-1. Analyze the provided profile data.
-2. Generate a clear and concise summary that captures the candidate's overall professional background, career highlights, and key skills.
-3. Produce a narrative summary in one or two paragraphs without bullet lists or separate sections for companies. Focus on the person's career trajectory rather than detailed company information.
+Key Aspects to Analyze:
 
-Input:
+Career Development:
+    -Describe the candidate's career trajectory, highlighting transitions between roles, companies, and industries.
+    - Evaluate responsibility progression and whether their roles reflect natural growth or strategic shifts.
+    - Identify career gaps, lateral moves, or unexpected changes and hypothesize potential reasons based on available information.
+
+Leadership Development:
+    - Assess how the candidate has advanced within organizations, including shifts from operational to strategic roles.
+    - Identify when and how leadership responsibilities have expanded (e.g., team management, departmental oversight, P&L ownership).
+    - Determine whether the candidate has exposure to board work, advisory roles, or other senior leadership functions.
+
+Patterns and Strategic Choices:
+    - Identify recurring themes, such as specialization within a niche, broad cross-functional experience, or frequent industry changes.
+    - Assess whether the candidate has made deliberate career choices to develop specific competencies or if their progression appears opportunistic.
+    - Look for geographical patterns (e.g., international experience, returning to specific markets).
+
+Additional Considerations:
+    - Does the candidate's education or training support their career development?
+    - Have they worked in both large corporations and smaller companies? In the public or private sector?
+    - Do they have experience with both privately owned and publicly traded companies, or involvement with Private Equity (PE) or Venture Capital (VC)?
+    - Are there indications of stagnation or lack of career progression?
+
+Language and Tone:
+    - Structure the information clearly and professionally.
+    - Maintain a neutral, concise, and experienced tone.
+    - Avoid speculation—base all insights strictly on explicitly available information.
+
+input:
 `
     },
     prompt4: {
-        name: "Default 4",
+        name: "Brief Summary",
         language: "English",
-        text: `You are an AI assistant helping a headhunter summarize LinkedIn profiles for client presentations. Your task is to create a concise, structured, and experience-focused summary of a candidate’s professional background and education based on available LinkedIn information.
+        text: `You are an AI assistant supporting an executive search consultant in creating a concise, two-sentence summary of a candidate based on their LinkedIn profile. Summarize the candidate's core competencies, industry experience, types of roles, and current position in an objective and precise manner, incorporating a brief mention of their current company.
+Example Output:
+"The candidate has over 15 years of experience in finance and technology, with leadership roles at DNB and Telenor. She is currently CFO at an international technology company and holds a master's degree in economics from NHH."
 
-Format:
-Experience-focused summary:
-
-Provide a clear and structured overview of the candidate’s most relevant experience, emphasizing leadership roles, responsibilities, and years in key positions.
-Use a structured approach, for example:
-"The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of experience as CFO across [Company A] and [Company B]. She also has consulting experience."
-Mention the candidate’s educational background briefly at the end, e.g., "She holds a master’s degree in economics from BI."
-List of companies the candidate has worked for:
-
-For each company, provide:
-Company name
-A brief description of its business
-Number of employees
-EBIT (retrieved from Proff.no, listed in MNOK without decimals)
-Language and tone:
-The summary should be clear, structured, and objective, avoiding unnecessary adjectives, speculation, or any information not explicitly stated in the LinkedIn profile.
-Ensure varied phrasing across candidates to maintain a natural and professional tone.
-The language should be neutral and concise, avoiding overly elaborate or AI-generated phrasing.
-Example output:
-Summary:
-The candidate has extensive experience in the energy and industrial sectors. She has held leadership roles at Equinor and Statkraft. She was CEO at [Company] from 2020 to 2024 and has eight years of CFO experience at [Company A] and [Company B]. She also has a background in consulting. She holds a master’s degree in economics from BI.
-
-Companies the candidate has worked for:
-
-Equinor – Energy company focused on oil, gas, and renewables. Approx. 21,000 employees. EBIT: 470,000 MNOK.
-Statkraft – State-owned company specializing in renewable energy. Approx. 5,000 employees. EBIT: 18,000 MNOK.
-McKinsey & Company – Global consultancy firm specializing in strategy and leadership. Approx. 30,000 employees worldwide. EBIT: Not available.`
+input:
+`
     }
 };
 
-document.addEventListener("DOMContentLoaded", function () {
+// Global state variables
+let activePrompt = "prompt1";
+let systemPrompts = JSON.parse(JSON.stringify(defaultPrompts));
+let initialState = null;
 
+document.addEventListener("DOMContentLoaded", function () {
     const versionSpan = document.getElementById('ext-version');
 
     if (versionSpan) {
         // Fetch the version from manifest.json at runtime
         const version = chrome.runtime.getManifest().version;
-
-        // Update the <span> text
         versionSpan.textContent = version;
     }
-
 
     const modal = document.getElementById("newPromptModal");
 
@@ -113,58 +140,124 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("newPromptModal").style.display = "block";
     });
 
-
     document.getElementById("resetAll").addEventListener("click", function () {
-        if (confirm("Are you sure you want to reset all prompt data to factory settings?")) {
-            chrome.storage.sync.set({
-                systemPrompts: defaultPrompts,
-                activePrompt: "prompt1"
-            }, function () {
-                if (chrome.runtime.lastError) {
-                    console.error("Error resetting data:", chrome.runtime.lastError);
-                    showSnackbar("Error resetting data. Please try again.");
-                } else {
-                    showSnackbar("Prompt data reset to factory settings.");
+        if (confirm("Are you sure you want to reset all propmt settings to factory defaults? This will not affect your API keys.")) {
+            // Get current API keys
+            chrome.storage.sync.get(['geminiApiKey', 'openaiApiKey', 'apiProvider'], function(data) {
+                const currentGeminiApiKey = data.geminiApiKey;
+                const currentOpenaiApiKey = data.openaiApiKey;
+                const currentApiProvider = data.apiProvider;
 
-                    // Update the global variables.
-                    systemPrompts = JSON.parse(JSON.stringify(defaultPrompts));
-                    activePrompt = "prompt1";
+                // Reset systemPrompts to default
+                systemPrompts = JSON.parse(JSON.stringify(defaultPrompts));
+                activePrompt = "prompt1";
 
-                    // Update the UI for prompts, leaving the API key unchanged.
-                    document.getElementById("systemPromptText").value = defaultPrompts["prompt1"].text;
-                    document.getElementById("languageSelect").value = defaultPrompts["prompt1"].language;
-                    populatePromptTabs();
-                    checkForChanges();
-                }
+                // Only store the active prompt and API settings
+                chrome.storage.sync.set({
+                    activePrompt: "prompt1",
+                    apiProvider: currentApiProvider || "gemini",
+                    openaiModel: "gpt-4o-mini",
+                    systemPrompts: {} // Reset to empty object since we're using defaults
+                }, function () {
+                    if (chrome.runtime.lastError) {
+                        console.error("Error resetting data:", chrome.runtime.lastError);
+                        showSnackbar(`Error resetting data: ${chrome.runtime.lastError.message || 'Unknown error'}`);
+                    } else {
+                        showSnackbar("Settings reset to factory defaults");
+
+                        // Update the UI
+                        document.getElementById("systemPromptText").value = defaultPrompts["prompt1"].text;
+                        document.getElementById("languageSelect").value = defaultPrompts["prompt1"].language;
+                        populatePromptTabs();
+                        checkForChanges();
+                    }
+                });
             });
         }
     });
 
-    chrome.storage.sync.get(["apiKey", "systemPrompts", "activePrompt"], function (data) {
-        const apiKeyInput = document.getElementById("apiKey");
+    // Add API provider change handler
+    const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
+    const openaiModelGroup = document.getElementById("openaiModelGroup");
+    const openaiApiKeyGroup = document.getElementById("openaiApiKeyGroup");
+    const geminiApiKeyGroup = document.getElementById("geminiApiKeyGroup");
+    const apiKeyLink = document.getElementById("apiKeyLink");
+
+    apiProviderRadios.forEach(radio => {
+        radio.addEventListener("change", function() {
+            const isOpenAI = this.value === "openai";
+            openaiModelGroup.style.display = isOpenAI ? "block" : "none";
+            openaiApiKeyGroup.style.display = isOpenAI ? "block" : "none";
+            geminiApiKeyGroup.style.display = isOpenAI ? "none" : "block";
+            apiKeyLink.href = isOpenAI 
+                ? "https://platform.openai.com/api-keys"
+                : "https://aistudio.google.com/app/apikey?_gl=1*aqv636*_ga*OTA1NDc1MjIyLjE3MzgxMTkyOTU.*_ga_P1DBVKWT6V*MTczODExOTI5NC4xLjAuMTczODExOTMyNS4yOS4wLjExMzAzMTE3Nw..";
+        });
+    });
+
+    // Update storage handling to include API provider and OpenAI model
+    chrome.storage.sync.get(["geminiApiKey", "openaiApiKey", "apiProvider", "openaiModel", "customPrompts", "activePrompt"], function (data) {
+        const geminiApiKeyInput = document.getElementById("geminiApiKey");
+        const openaiApiKeyInput = document.getElementById("openaiApiKey");
+        const apiProviderRadios = document.querySelectorAll('input[name="apiProvider"]');
+        const openaiModelSelect = document.getElementById("openaiModel");
         const promptTextArea = document.getElementById("systemPromptText");
         const languageSelect = document.getElementById("languageSelect");
 
-        if (data.apiKey) {
-            apiKeyInput.value = data.apiKey;
+        if (data.geminiApiKey) {
+            geminiApiKeyInput.value = data.geminiApiKey;
         }
-        systemPrompts = data.systemPrompts || defaultPrompts;
+        if (data.openaiApiKey) {
+            openaiApiKeyInput.value = data.openaiApiKey;
+        }
+        if (data.apiProvider) {
+            const selectedRadio = document.querySelector(`input[name="apiProvider"][value="${data.apiProvider}"]`);
+            if (selectedRadio) {
+                selectedRadio.checked = true;
+                const isOpenAI = data.apiProvider === "openai";
+                openaiModelGroup.style.display = isOpenAI ? "block" : "none";
+                openaiApiKeyGroup.style.display = isOpenAI ? "block" : "none";
+                geminiApiKeyGroup.style.display = isOpenAI ? "none" : "block";
+            }
+        }
+        if (data.openaiModel) {
+            openaiModelSelect.value = data.openaiModel;
+        }
+
+        // Initialize systemPrompts with defaults first
+        systemPrompts = JSON.parse(JSON.stringify(defaultPrompts));
+        
+        // If we have stored custom prompts, decompress and merge them
+        if (data.customPrompts) {
+            Object.keys(data.customPrompts).forEach(key => {
+                const compressedPrompt = data.customPrompts[key];
+                systemPrompts[key] = {
+                    name: compressedPrompt.n,
+                    text: compressedPrompt.t,
+                    language: compressedPrompt.l
+                };
+            });
+        }
+
         activePrompt = data.activePrompt || "prompt1";
         updatePromptTabUI();
 
-        promptTextArea.value =
-            (systemPrompts[activePrompt] && systemPrompts[activePrompt].text) ||
-            defaultPrompts[activePrompt].text;
-        languageSelect.value =
-            (systemPrompts[activePrompt] && systemPrompts[activePrompt].language) ||
-            defaultPrompts[activePrompt].language;
-        if (!systemPrompts[activePrompt].name) {
-            systemPrompts[activePrompt].name = defaultPrompts[activePrompt].name || activePrompt;
+        // Ensure we have valid data before accessing it
+        if (systemPrompts[activePrompt]) {
+            promptTextArea.value = systemPrompts[activePrompt].text || "";
+            languageSelect.value = systemPrompts[activePrompt].language || "English";
+        } else {
+            promptTextArea.value = defaultPrompts.prompt1.text;
+            languageSelect.value = defaultPrompts.prompt1.language;
+            activePrompt = "prompt1";
         }
 
-        // Save the initial state for change detection.
+        // Save the initial state for change detection
         initialState = {
-            apiKey: data.apiKey || "",
+            geminiApiKey: data.geminiApiKey || "",
+            openaiApiKey: data.openaiApiKey || "",
+            apiProvider: data.apiProvider || "",
+            openaiModel: data.openaiModel || "",
             activePrompt: activePrompt,
             systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
         };
@@ -173,40 +266,83 @@ document.addEventListener("DOMContentLoaded", function () {
         populatePromptTabs();
     });
 
-    document.getElementById("apiKey").addEventListener("input", checkForChanges);
-    document.getElementById("languageSelect").addEventListener("change", checkForChanges);
-    document.getElementById("systemPromptText").addEventListener("input", checkForChanges);
+    // Add event listeners for API key changes
+    document.getElementById("geminiApiKey").addEventListener("input", function() {
+        checkForChanges();
+    });
 
+    document.getElementById("openaiApiKey").addEventListener("input", function() {
+        checkForChanges();
+    });
+
+    // Update save handler to store only non-default prompts
     document.getElementById("save").addEventListener("click", function () {
-        const apiKeyInput = document.getElementById("apiKey");
+        const geminiApiKeyInput = document.getElementById("geminiApiKey");
+        const openaiApiKeyInput = document.getElementById("openaiApiKey");
+        const selectedApiProvider = document.querySelector('input[name="apiProvider"]:checked').value;
+        const openaiModelSelect = document.getElementById("openaiModel");
         const promptTextArea = document.getElementById("systemPromptText");
         const languageSelect = document.getElementById("languageSelect");
 
-        systemPrompts[activePrompt] = {
-            language: languageSelect.value,
-            text: promptTextArea.value,
-            name: systemPrompts[activePrompt].name || defaultPrompts[activePrompt].name || activePrompt,
+        // Update current prompt before saving
+        if (systemPrompts[activePrompt]) {
+            systemPrompts[activePrompt].text = promptTextArea.value;
+            systemPrompts[activePrompt].language = languageSelect.value;
+        }
+
+        const geminiApiKey = geminiApiKeyInput.value.trim();
+        const openaiApiKey = openaiApiKeyInput.value.trim();
+        const openaiModel = openaiModelSelect.value;
+
+        // Create a copy of prompts to store, excluding default prompts
+        const promptsToStore = {};
+        Object.keys(systemPrompts).forEach(key => {
+            if (!defaultPrompts.hasOwnProperty(key) || 
+                (systemPrompts[key].text !== defaultPrompts[key]?.text || 
+                 systemPrompts[key].language !== defaultPrompts[key]?.language)) {
+                promptsToStore[key] = systemPrompts[key];
+            }
+        });
+
+        // Compress the prompts data
+        const compressedPrompts = {};
+        Object.keys(promptsToStore).forEach(key => {
+            compressedPrompts[key] = {
+                n: promptsToStore[key].name,
+                t: promptsToStore[key].text,
+                l: promptsToStore[key].language
+            };
+        });
+
+        // Save all settings at once
+        const settings = {
+            geminiApiKey,
+            openaiApiKey,
+            apiProvider: selectedApiProvider,
+            openaiModel,
+            activePrompt,
+            customPrompts: compressedPrompts
         };
 
-        const apiKey = apiKeyInput.value.trim();
-
-        chrome.storage.sync.set({
-            apiKey: apiKey,
-            systemPrompts: systemPrompts,
-            activePrompt: activePrompt,
-        }, function () {
+        chrome.storage.sync.set(settings, function() {
             if (chrome.runtime.lastError) {
                 console.error("Error saving settings:", chrome.runtime.lastError);
-                alert("An error occurred while saving settings. Please try again.");
-            } else {
-                showSnackbar("Settings saved successfully");
-                initialState = {
-                    apiKey: apiKey,
-                    activePrompt: activePrompt,
-                    systemPrompts: JSON.parse(JSON.stringify(systemPrompts)),
-                };
-                checkForChanges();
+                showSnackbar(`Error saving settings: ${chrome.runtime.lastError.message || 'Unknown error'}`);
+                return;
             }
+
+            // Update initial state to match current state
+            initialState = {
+                geminiApiKey,
+                openaiApiKey,
+                apiProvider: selectedApiProvider,
+                openaiModel,
+                activePrompt,
+                systemPrompts: JSON.parse(JSON.stringify(systemPrompts))
+            };
+
+            showSnackbar("Settings saved successfully");
+            checkForChanges();
         });
     });
 
@@ -214,18 +350,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const promptTextArea = document.getElementById("systemPromptText");
         const languageSelect = document.getElementById("languageSelect");
 
-        systemPrompts[activePrompt] = defaultPrompts[activePrompt];
-        promptTextArea.value = defaultPrompts[activePrompt].text;
-        languageSelect.value = defaultPrompts[activePrompt].language;
-        chrome.storage.sync.set({ systemPrompts: systemPrompts }, function () {
-            if (chrome.runtime && chrome.runtime.lastError) {
-                console.error("Error restoring default prompt:", chrome.runtime.lastError);
-                showSnackbar("An error occurred while restoring the default prompt. Please try again.");
-            } else {
+        if (defaultPrompts[activePrompt]) {
+            try {
+                systemPrompts[activePrompt] = JSON.parse(JSON.stringify(defaultPrompts[activePrompt]));
+                systemPrompts[activePrompt].isDefault = true;
+                promptTextArea.value = defaultPrompts[activePrompt].text;
+                languageSelect.value = defaultPrompts[activePrompt].language;
+                
+                // Update UI and state without saving to storage
                 showSnackbar("Default prompt restored");
                 checkForChanges();
+            } catch (error) {
+                console.error("Error during prompt restoration:", error);
+                showSnackbar(`Error restoring default prompt: ${error.message || 'Unknown error'}`);
             }
-        });
+        }
     });
 
     const newPromptForm = document.getElementById("newPromptForm");
@@ -240,14 +379,24 @@ document.addEventListener("DOMContentLoaded", function () {
         const promptLanguage = promptLanguageSelect.value;
 
         if (promptName && promptText && promptLanguage) {
-            // Add the new prompt to the global systemPrompts.
+            // Add the new prompt to the global systemPrompts with isDefault set to false
             systemPrompts[promptName] = {
                 name: promptName,
                 text: promptText,
                 language: promptLanguage,
+                isDefault: false
             };
 
-            // Re-populate the prompt tabs to include the new prompt.
+            // Set the new prompt as active
+            activePrompt = promptName;
+            
+            // Update the main prompt text area and language select with the new prompt's content
+            const promptTextArea = document.getElementById("systemPromptText");
+            const languageSelect = document.getElementById("languageSelect");
+            promptTextArea.value = promptText;
+            languageSelect.value = promptLanguage;
+
+            // Re-populate the prompt tabs to include the new prompt and show it as selected
             populatePromptTabs();
 
             // Clear form fields and close the modal.
@@ -255,14 +404,12 @@ document.addEventListener("DOMContentLoaded", function () {
             promptTextInput.value = "";
             promptLanguageSelect.value = "English";
             modal.style.display = "none";
+
+            // Show save button since we made changes
+            checkForChanges();
         }
     });
 });
-
-// Global state variables
-let activePrompt = "prompt1";
-let systemPrompts = {};
-let initialState = null;
 
 function updatePromptTabUI() {
     document.querySelectorAll(".prompt-tab").forEach((button) => {
@@ -274,48 +421,86 @@ function updatePromptTabUI() {
     });
 }
 
+// Update change detection to include API provider and OpenAI model
 function checkForChanges() {
-    const apiKey = document.getElementById("apiKey").value.trim();
-    const promptText = document.getElementById("systemPromptText").value;
+    const geminiApiKeyInput = document.getElementById("geminiApiKey");
+    const openaiApiKeyInput = document.getElementById("openaiApiKey");
+    const selectedApiProvider = document.querySelector('input[name="apiProvider"]:checked').value;
+    const openaiModelSelect = document.getElementById("openaiModel");
+    const promptTextArea = document.getElementById("systemPromptText");
     const languageSelect = document.getElementById("languageSelect");
 
-    systemPrompts[activePrompt] = {
-        language: languageSelect.value,
-        text: promptText,
-        name: systemPrompts[activePrompt].name || defaultPrompts[activePrompt].name || activePrompt,
-    };
-
-    const systemPromptsChanged =
-        JSON.stringify(systemPrompts) !== JSON.stringify(initialState.systemPrompts);
-    const apiKeyChanged = apiKey !== initialState.apiKey;
-    const activePromptChanged = activePrompt !== initialState.activePrompt;
-
-    const changes = apiKeyChanged || activePromptChanged || systemPromptsChanged;
-
-    const saveButton = document.getElementById("save");
-    if (changes) {
-        saveButton.disabled = false;
-        saveButton.classList.add("active");
-    } else {
-        saveButton.disabled = true;
-        saveButton.classList.remove("active");
+    // Update current prompt in systemPrompts
+    if (systemPrompts[activePrompt]) {
+        systemPrompts[activePrompt].text = promptTextArea.value;
+        systemPrompts[activePrompt].language = languageSelect.value;
     }
+
+    // Compare current values with initial state
+    const hasApiKeyChanges = 
+        geminiApiKeyInput.value.trim() !== initialState.geminiApiKey ||
+        openaiApiKeyInput.value.trim() !== initialState.openaiApiKey;
+
+    const hasProviderChanges = 
+        selectedApiProvider !== initialState.apiProvider ||
+        openaiModelSelect.value !== initialState.openaiModel;
+
+    // Add activePrompt change detection
+    const hasActivePromptChange = activePrompt !== initialState.activePrompt;
+
+    const hasPromptChanges = Object.keys(systemPrompts).some(key => {
+        const initial = initialState.systemPrompts[key];
+        const current = systemPrompts[key];
+        return !initial || !current ||
+            initial.text !== current.text ||
+            initial.language !== current.language ||
+            initial.name !== current.name;
+    });
+
+    const hasChanges = hasApiKeyChanges || hasProviderChanges || hasPromptChanges || hasActivePromptChange;
+    document.getElementById("save").disabled = !hasChanges;
 }
 
-function enableTabEdit(tabButton) {
+// Add event listeners for all changes
+document.getElementById("systemPromptText").addEventListener("input", function() {
+    if (systemPrompts[activePrompt]) {
+        systemPrompts[activePrompt].text = this.value;
+        checkForChanges();
+    }
+});
+
+document.getElementById("languageSelect").addEventListener("change", function() {
+    if (systemPrompts[activePrompt]) {
+        systemPrompts[activePrompt].language = this.value;
+        checkForChanges();
+    }
+});
+
+// Add event listener for API provider changes
+document.querySelectorAll('input[name="apiProvider"]').forEach(radio => {
+    radio.addEventListener("change", checkForChanges);
+});
+
+// Add event listener for OpenAI model changes
+document.getElementById("openaiModel").addEventListener("change", checkForChanges);
+
+function editTabName(tabButton) {
     const labelSpan = tabButton.querySelector(".prompt-label");
     if (!labelSpan) return;
     const currentName = labelSpan.textContent;
+    
     const input = document.createElement("input");
     input.type = "text";
     input.value = currentName;
     input.className = "prompt-edit-input";
     tabButton.replaceChild(input, labelSpan);
+    tabButton.classList.add('editing');
     input.focus();
 
     input.addEventListener("blur", function () {
         finishEditing(tabButton, input.value);
     });
+
     input.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
             input.blur();
@@ -330,19 +515,13 @@ function finishEditing(tabButton, newName) {
     const input = tabButton.querySelector("input.prompt-edit-input");
     if (input) {
         tabButton.replaceChild(newLabel, input);
+        tabButton.classList.remove('editing');
     }
     const key = tabButton.dataset.prompt;
     if (systemPrompts[key]) {
         systemPrompts[key].name = newName;
+        checkForChanges();
     }
-    chrome.storage.sync.set({ systemPrompts: systemPrompts }, function () {
-        if (chrome.runtime.lastError) {
-            console.error("Error updating prompt name:", chrome.runtime.lastError);
-        } else {
-            console.log("Prompt name updated in storage");
-        }
-    });
-    checkForChanges();
 }
 
 function attachEditIconListener(tabButton) {
@@ -350,16 +529,19 @@ function attachEditIconListener(tabButton) {
     if (editIcon) {
         editIcon.addEventListener("click", function (e) {
             e.stopPropagation();
-            enableTabEdit(tabButton);
+            editTabName(tabButton);
         });
     }
 }
 
 function populatePromptTabs() {
     const promptTabsContainer = document.querySelector(".prompt-tabs");
-    promptTabsContainer.innerHTML = ""; // Clear previous tabs
+    const restoreDefaultPromptButton = document.getElementById("restoreDefaultPrompt");
 
-    // Build an ordered list of keys: default prompts always come first.
+    // Clear existing tabs
+    promptTabsContainer.innerHTML = '';
+
+    // Build an ordered list of keys: default prompts always come first
     const defaultKeys = Object.keys(defaultPrompts).filter(key => systemPrompts.hasOwnProperty(key));
     const customKeys = Object.keys(systemPrompts).filter(key => !defaultPrompts.hasOwnProperty(key));
     const orderedKeys = [...defaultKeys, ...customKeys];
@@ -386,22 +568,37 @@ function populatePromptTabs() {
         editIcon.textContent = "edit";
         button.appendChild(editIcon);
 
-        // When a tab is clicked, switch to that prompt.
+        // When a tab is clicked, switch to that prompt
         button.addEventListener("click", function () {
             const promptTextArea = document.getElementById("systemPromptText");
             const languageSelect = document.getElementById("languageSelect");
-            // Save current prompt text.
-            systemPrompts[activePrompt].text = promptTextArea.value;
-            // Switch active prompt.
+            
+            // Save current prompt text before switching
+            if (systemPrompts[activePrompt]) {
+                systemPrompts[activePrompt].text = promptTextArea.value;
+                systemPrompts[activePrompt].language = languageSelect.value;
+            }
+            
+            // Switch active prompt
+            const previousActivePrompt = activePrompt;
             activePrompt = button.dataset.prompt;
-            updatePromptTabUI();
-
-            promptTextArea.value = systemPrompts[activePrompt].text || "";
-            languageSelect.value = systemPrompts[activePrompt].language || "English";
-            checkForChanges();
+            
+            // Only trigger changes if we actually switched to a different prompt
+            if (previousActivePrompt !== activePrompt) {
+                updatePromptTabUI();
+                // Update text area and language select with new prompt data
+                promptTextArea.value = systemPrompts[activePrompt].text || "";
+                languageSelect.value = systemPrompts[activePrompt].language || "English";
+                
+                // Show/hide restore button based on whether it's a default prompt
+                restoreDefaultPromptButton.style.display = 
+                    defaultPrompts.hasOwnProperty(activePrompt) ? "inline-block" : "none";
+                
+                checkForChanges();
+            }
         });
 
-        // Attach the edit and delete listeners.
+        // Attach the edit and delete listeners
         attachEditIconListener(button);
         attachDeleteIconListener(button);
 
