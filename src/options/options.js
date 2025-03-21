@@ -387,7 +387,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 isDefault: false
             };
 
-            // Re-populate the prompt tabs to include the new prompt.
+            // Set the new prompt as active
+            activePrompt = promptName;
+            
+            // Update the main prompt text area and language select with the new prompt's content
+            const promptTextArea = document.getElementById("systemPromptText");
+            const languageSelect = document.getElementById("languageSelect");
+            promptTextArea.value = promptText;
+            languageSelect.value = promptLanguage;
+
+            // Re-populate the prompt tabs to include the new prompt and show it as selected
             populatePromptTabs();
 
             // Clear form fields and close the modal.
@@ -395,6 +404,9 @@ document.addEventListener("DOMContentLoaded", function () {
             promptTextInput.value = "";
             promptLanguageSelect.value = "English";
             modal.style.display = "none";
+
+            // Show save button since we made changes
+            checkForChanges();
         }
     });
 });
